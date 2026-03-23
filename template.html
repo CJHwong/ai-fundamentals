@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>從零開始認識 AI - LLM、Agent、以及怎麼跟它們合作</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&family=DM+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #faf9f6; --fg: #2c2c2c; --muted: #7a7a7a; --subtle: #b0aba3;
+      --border: #e8e4de; --accent: #c45d3e; --accent-soft: #c45d3e18;
+      --code-bg: #f0ede8; --card-bg: #fff; --quiz-bg: #fdf6f0;
+      --shadow: 0 1px 3px rgba(0,0,0,0.06);
+      --shadow-lg: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1c1b19; --fg: #d8d4cd; --muted: #8a8580; --subtle: #5a5550;
+        --border: #333028; --accent: #e8845a; --accent-soft: #e8845a15;
+        --code-bg: #252320; --card-bg: #23221f; --quiz-bg: #2a2520;
+        --shadow: 0 1px 3px rgba(0,0,0,0.2);
+        --shadow-lg: 0 4px 20px rgba(0,0,0,0.3);
+      }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; scroll-padding-top: 2rem; }
+    #progress { position: fixed; top: 0; left: 0; height: 3px; background: var(--accent); width: 0%; z-index: 1000; transition: width 0.1s; }
+    #totop {
+      position: fixed; bottom: 2rem; right: 2rem; width: 42px; height: 42px;
+      border-radius: 50%; background: var(--accent); color: #fff; border: none;
+      font-size: 1.2rem; cursor: pointer; opacity: 0; transition: opacity 0.3s, transform 0.3s;
+      transform: translateY(10px); z-index: 999; display: flex; align-items: center; justify-content: center;
+    }
+    #totop.show { opacity: 0.85; transform: translateY(0); }
+    #totop:hover { opacity: 1; transform: translateY(-2px); }
+    body {
+      font-family: "Noto Sans TC", "Crimson Pro", Georgia, serif;
+      line-height: 1.9; color: var(--fg); background: var(--bg);
+      max-width: 720px; margin: 0 auto; padding: 3rem 1.5rem 5rem;
+      font-size: 16.5px; -webkit-font-smoothing: antialiased;
+    }
+    h1.title {
+      font-family: "Crimson Pro", "Noto Sans TC", serif;
+      font-size: 2.8rem; font-weight: 700; text-align: center;
+      letter-spacing: -0.02em; line-height: 1.2;
+      margin: 2rem 0 0.5rem; border: none; color: var(--fg);
+    }
+    h1.title::after {
+      content: ""; display: block; width: 60px; height: 3px;
+      background: var(--accent); margin: 1.2rem auto 0; border-radius: 2px;
+    }
+    .subtitle { text-align: center; color: var(--muted); font-size: 0.92rem; margin-top: 0.8rem; }
+    h1 {
+      font-family: "Noto Sans TC", sans-serif;
+      font-size: 1.65rem; font-weight: 700; margin-top: 4rem; padding-top: 2rem;
+      border-top: 1px solid var(--border); border-bottom: none; line-height: 1.4;
+    }
+    h2 {
+      font-family: "Noto Sans TC", sans-serif;
+      font-size: 1.25rem; font-weight: 700; margin-top: 2.5rem;
+      color: var(--accent); line-height: 1.4; letter-spacing: 0.01em;
+    }
+    h3 { font-size: 1.05rem; font-weight: 700; margin-top: 2rem; color: var(--fg); }
+    p { margin: 0.8rem 0; }
+    a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.2s; }
+    a:hover { border-bottom-color: var(--accent); }
+    ul, ol { padding-left: 1.5rem; margin: 0.8rem 0; }
+    li { margin: 0.3rem 0; }
+    li > ol, li > ul { margin: 0.2rem 0; }
+    blockquote {
+      position: relative; margin: 1.8rem 0; padding: 1rem 1.2rem 1rem 1.5rem;
+      background: var(--accent-soft); border-left: 3px solid var(--accent);
+      border-radius: 0 6px 6px 0; font-size: 0.95rem; color: var(--fg);
+    }
+    blockquote p { margin: 0.4rem 0; }
+    code {
+      font-family: "DM Mono", "SF Mono", Menlo, monospace;
+      background: var(--code-bg); padding: 0.15rem 0.45rem; border-radius: 4px;
+      font-size: 0.85em; color: var(--accent);
+    }
+    pre {
+      background: var(--code-bg); padding: 1.2rem 1.4rem; border-radius: 8px;
+      overflow-x: auto; font-size: 0.82rem; margin: 1.2rem 0; border: 1px solid var(--border);
+    }
+    pre code { background: none; padding: 0; color: var(--fg); }
+    table {
+      width: 100%; border-collapse: separate; border-spacing: 0;
+      margin: 1.5rem 0; font-size: 0.9rem; border-radius: 8px;
+      overflow: hidden; border: 1px solid var(--border);
+    }
+    th, td { padding: 0.65rem 1rem; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background: var(--code-bg); font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+    tr:last-child td { border-bottom: none; }
+    td { background: var(--card-bg); }
+    hr { border: none; height: 1px; background: var(--border); margin: 3.5rem 0; }
+    details {
+      background: var(--quiz-bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 0.8rem 1.2rem; margin: 0.8rem 0 1.8rem;
+      transition: background 0.2s;
+    }
+    details summary {
+      cursor: pointer; font-weight: 600; color: var(--accent);
+      font-size: 0.92rem; list-style: none; display: flex; align-items: center; gap: 0.5rem;
+    }
+    details summary::before { content: "▶"; font-size: 0.7rem; transition: transform 0.2s; display: inline-block; }
+    details[open] summary::before { transform: rotate(90deg); }
+    details summary::-webkit-details-marker { display: none; }
+    details[open] summary { margin-bottom: 0.6rem; }
+    details > p, details > div { font-size: 0.92rem; line-height: 1.7; }
+    nav#TOC {
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 12px; padding: 2rem 2.5rem; margin: 2.5rem 0 3.5rem;
+      box-shadow: var(--shadow-lg);
+    }
+    nav#TOC::before {
+      content: "目錄"; display: block; font-size: 0.8rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted);
+      margin-bottom: 1rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--border);
+    }
+    nav#TOC > ul { padding-left: 0; }
+    nav#TOC ul { list-style: none; padding-left: 1rem; }
+    nav#TOC > ul > li { margin: 0.6rem 0; font-weight: 600; font-size: 0.95rem; }
+    nav#TOC > ul > li > ul { display: none; }
+    nav#TOC > ul > li > a { color: var(--fg); display: block; padding: 0.2rem 0; transition: color 0.2s; }
+    nav#TOC > ul > li > a:hover { color: var(--accent); border-bottom: none; }
+    strong { font-weight: 700; color: var(--fg); }
+    .quiz-block { margin: 1.5rem 0 2.5rem; }
+    .quiz-q { font-weight: 600; margin-bottom: 0.8rem; }
+    .quiz-options { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+    .quiz-opt {
+      padding: 0.65rem 1rem; border: 1px solid var(--border); border-radius: 8px;
+      cursor: pointer; transition: all 0.2s; background: var(--card-bg);
+      font-size: 0.93rem; line-height: 1.6;
+    }
+    .quiz-opt:hover { border-color: var(--accent); background: var(--accent-soft); }
+    .quiz-opt.selected { border-color: var(--accent); background: var(--accent-soft); font-weight: 500; }
+    .quiz-opt.correct { border-color: #4a9; background: #4a92; }
+    .quiz-opt.wrong { border-color: #c44; background: #c4420e; }
+    .quiz-opt.locked { pointer-events: none; opacity: 0.7; }
+    .quiz-opt.locked.correct { opacity: 1; }
+    .quiz-explanation {
+      margin-top: 0.8rem; padding: 0.8rem 1rem; border-radius: 8px;
+      background: var(--quiz-bg); border: 1px solid var(--border);
+      font-size: 0.9rem; line-height: 1.7; display: none;
+    }
+    .quiz-explanation.show { display: block; animation: slideIn 0.3s ease-out; }
+    .quiz-result { font-weight: 600; margin-bottom: 0.3rem; }
+    .quiz-result.pass { color: #4a9; }
+    .quiz-result.fail { color: #c44; }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .quiz-score {
+      text-align: center; padding: 1.5rem; margin: 2rem 0;
+      background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px;
+      box-shadow: var(--shadow);
+    }
+    .quiz-score .score-num { font-size: 2.5rem; font-weight: 700; color: var(--accent); }
+    .quiz-score .score-label { color: var(--muted); font-size: 0.9rem; margin-top: 0.3rem; }
+    #resume-banner {
+      position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 10px; padding: 0.7rem 1rem; box-shadow: var(--shadow-lg);
+      display: flex; align-items: center; gap: 0.8rem; z-index: 998;
+      font-size: 0.88rem; opacity: 0; transition: opacity 0.4s, transform 0.4s;
+      max-width: 90vw;
+    }
+    #resume-banner.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    #resume-text { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #resume-btn {
+      background: var(--accent); color: #fff; border: none; border-radius: 6px;
+      padding: 0.35rem 0.9rem; font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; white-space: nowrap; transition: opacity 0.2s;
+    }
+    #resume-btn:hover { opacity: 0.85; }
+    #resume-dismiss {
+      background: none; border: none; color: var(--subtle); cursor: pointer;
+      font-size: 1rem; padding: 0 0.2rem; line-height: 1;
+    }
+    #resume-dismiss:hover { color: var(--fg); }
+    @media (max-width: 640px) {
+      body { padding: 1.5rem 1rem 4rem; font-size: 15px; }
+      h1.title { font-size: 2rem; }
+      h1 { font-size: 1.4rem; margin-top: 3rem; padding-top: 1.5rem; }
+      nav#TOC { padding: 1.2rem 1.5rem; }
+      table { font-size: 0.8rem; }
+      th, td { padding: 0.4rem 0.6rem; }
+      blockquote { margin: 1.2rem 0; padding: 0.8rem 1rem; }
+      #totop { bottom: 1.2rem; right: 1.2rem; width: 38px; height: 38px; }
+    }
+    @media print {
+      body { max-width: 100%; padding: 0; font-size: 11pt; }
+      #progress, #totop, #resume-banner { display: none; }
+      h1 { break-before: page; }
+      details { border: 1px solid #ccc; }
+      nav#TOC { break-after: page; }
+      a { color: inherit; border: none; }
+      a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 0.8em; color: #666; }
+    }
+  </style>
+</head>
+<body>
+<div id="progress"></div>
+<button id="totop" onclick="window.scrollTo({top:0})">↑</button>
+<header id="title-block-header">
+<h1 class="title">從零開始認識 AI</h1>
+<p class="subtitle">LLM、Agent、以及怎麼跟它們合作</p>
+<p class="subtitle">Hoss Huang · hoss@gofreight.com · March 2026</p>
+</header>
+$body$
+<div id="resume-banner" style="display:none">
+  <span id="resume-text"></span>
+  <button id="resume-btn">繼續閱讀</button>
+  <button id="resume-dismiss">✕</button>
+</div>
+<script>
+// Interactive quizzes
+document.addEventListener('DOMContentLoaded', () => {
+  const strongs = document.querySelectorAll('p > strong');
+  const quizzes = [];
+  strongs.forEach(s => {
+    const m = s.textContent.match(/^Q(\d+)\./);
+    if (!m) return;
+    const p = s.parentElement;
+    const ul = p.nextElementSibling;
+    if (!ul || ul.tagName !== 'UL') return;
+    const details = ul.nextElementSibling;
+    if (!details || details.tagName !== 'DETAILS') return;
+    const detailsText = details.textContent.replace('答案', '').trim();
+    const answerMatch = detailsText.match(/^([A-D](?:、[A-D])*)/);
+    const correctLetters = answerMatch ? answerMatch[1].split('、') : [];
+    const explanation = detailsText.replace(/^[A-D](?:、[A-D])*[。．.]?\s*/, '');
+    const isMulti = correctLetters.length > 1;
+    const choices = [];
+    ul.querySelectorAll(':scope > li').forEach(li => choices.push(li.textContent.trim()));
+    const letters = ['A', 'B', 'C', 'D', 'E'];
+    quizzes.push({ num: m[1], questionEl: p, ulEl: ul, detailsEl: details, question: p.innerHTML, choices, correctLetters, explanation, isMulti, letters });
+  });
+  quizzes.forEach(q => {
+    const block = document.createElement('div');
+    block.className = 'quiz-block';
+    block.dataset.answered = 'false';
+    const qDiv = document.createElement('div');
+    qDiv.className = 'quiz-q';
+    qDiv.innerHTML = q.question;
+    block.appendChild(qDiv);
+    if (q.isMulti) {
+      const hint = document.createElement('div');
+      hint.style.cssText = 'font-size:0.82rem;color:var(--muted);margin-bottom:0.6rem;';
+      hint.textContent = '（複選題，選完後按確認）';
+      block.appendChild(hint);
+    }
+    const optList = document.createElement('ul');
+    optList.className = 'quiz-options';
+    q.choices.forEach((c, i) => {
+      const li = document.createElement('li');
+      li.className = 'quiz-opt';
+      li.dataset.letter = q.letters[i];
+      li.textContent = c;
+      if (q.isMulti) {
+        li.addEventListener('click', () => { if (block.dataset.answered === 'true') return; li.classList.toggle('selected'); });
+      } else {
+        li.addEventListener('click', () => { if (block.dataset.answered === 'true') return; submitAnswer(block, q, [q.letters[i]], optList, explDiv); });
+      }
+      optList.appendChild(li);
+    });
+    block.appendChild(optList);
+    if (q.isMulti) {
+      const btn = document.createElement('button');
+      btn.textContent = '確認答案';
+      btn.style.cssText = 'margin-top:0.6rem;padding:0.4rem 1.2rem;background:var(--accent);color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:0.88rem;font-weight:600;';
+      btn.addEventListener('click', () => {
+        if (block.dataset.answered === 'true') return;
+        const selected = [...optList.querySelectorAll('.selected')].map(el => el.dataset.letter);
+        if (selected.length === 0) return;
+        submitAnswer(block, q, selected, optList, explDiv);
+        btn.style.display = 'none';
+      });
+      block.appendChild(btn);
+    }
+    const explDiv = document.createElement('div');
+    explDiv.className = 'quiz-explanation';
+    block.appendChild(explDiv);
+    q.questionEl.parentNode.insertBefore(block, q.questionEl);
+    q.questionEl.remove(); q.ulEl.remove(); q.detailsEl.remove();
+  });
+  function submitAnswer(block, q, selected, optList, explDiv) {
+    block.dataset.answered = 'true';
+    const isCorrect = selected.length === q.correctLetters.length && selected.every(l => q.correctLetters.includes(l));
+    optList.querySelectorAll('.quiz-opt').forEach(opt => {
+      opt.classList.add('locked');
+      if (q.correctLetters.includes(opt.dataset.letter)) opt.classList.add('correct');
+      else if (selected.includes(opt.dataset.letter)) opt.classList.add('wrong');
+    });
+    const result = document.createElement('div');
+    result.className = 'quiz-result ' + (isCorrect ? 'pass' : 'fail');
+    result.textContent = isCorrect ? '✓ 正確' : '✗ 不正確';
+    explDiv.appendChild(result);
+    const expl = document.createElement('div');
+    expl.textContent = q.explanation;
+    explDiv.appendChild(expl);
+    explDiv.classList.add('show');
+    updateScore();
+  }
+  function updateScore() {
+    const scoreEl = document.getElementById('quiz-score-display');
+    if (!scoreEl) return;
+    const allBlocks = document.querySelectorAll('.quiz-block[data-answered="true"]');
+    let correct = 0;
+    allBlocks.forEach(b => { if (b.querySelector('.quiz-result.pass')) correct++; });
+    const total = document.querySelectorAll('.quiz-block').length;
+    scoreEl.querySelector('.score-num').textContent = correct + ' / ' + total;
+  }
+  const lastQuiz = document.querySelectorAll('.quiz-block');
+  if (lastQuiz.length > 0 && !document.getElementById('quiz-score-display')) {
+    const scoreDiv = document.createElement('div');
+    scoreDiv.className = 'quiz-score';
+    scoreDiv.id = 'quiz-score-display';
+    scoreDiv.innerHTML = '<div class="score-num">0 / ' + lastQuiz.length + '</div><div class="score-label">答對題數（含各章節小測驗 + 綜合測驗）</div>';
+    document.body.appendChild(scoreDiv);
+  }
+});
+
+// Progress bar + back-to-top + reading position
+const prog = document.getElementById('progress');
+const totop = document.getElementById('totop');
+const KEY = 'ai-fundamentals-pos';
+function getCurrentSection() {
+  const headers = document.querySelectorAll('h1:not(.title)');
+  let current = null;
+  for (const h of headers) { if (h.getBoundingClientRect().top < 120) current = h; }
+  return current;
+}
+let saveTimer;
+window.addEventListener('scroll', () => {
+  const h = document.documentElement.scrollHeight - window.innerHeight;
+  prog.style.width = (window.scrollY / h * 100) + '%';
+  totop.classList.toggle('show', window.scrollY > 400);
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    const sec = getCurrentSection();
+    if (sec && window.scrollY > 300) {
+      localStorage.setItem(KEY, JSON.stringify({ id: sec.id, title: sec.textContent.trim(), pct: Math.round(window.scrollY / h * 100), ts: Date.now() }));
+    }
+  }, 2000);
+}, { passive: true });
+(function() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(KEY));
+    if (!saved || !saved.id) return;
+    if (Date.now() - saved.ts > 30 * 86400000) return;
+    const target = document.getElementById(saved.id);
+    if (!target) return;
+    const banner = document.getElementById('resume-banner');
+    document.getElementById('resume-text').textContent = '上次讀到 ' + saved.title + '（' + saved.pct + '%）';
+    banner.style.display = 'flex';
+    setTimeout(() => banner.classList.add('show'), 50);
+    document.getElementById('resume-btn').onclick = () => { target.scrollIntoView({ behavior: 'smooth' }); banner.classList.remove('show'); setTimeout(() => banner.style.display = 'none', 400); };
+    document.getElementById('resume-dismiss').onclick = () => { banner.classList.remove('show'); setTimeout(() => banner.style.display = 'none', 400); };
+    setTimeout(() => { if (banner.classList.contains('show')) { banner.classList.remove('show'); setTimeout(() => banner.style.display = 'none', 400); } }, 8000);
+  } catch(e) {}
+})();
+</script>
+</body>
+</html>

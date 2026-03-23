@@ -1,0 +1,2874 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>從零開始認識 AI - LLM、Agent、以及怎麼跟它們合作</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&family=DM+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #faf9f6; --fg: #2c2c2c; --muted: #7a7a7a; --subtle: #b0aba3;
+      --border: #e8e4de; --accent: #c45d3e; --accent-soft: #c45d3e18;
+      --code-bg: #f0ede8; --card-bg: #fff; --quiz-bg: #fdf6f0;
+      --shadow: 0 1px 3px rgba(0,0,0,0.06);
+      --shadow-lg: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1c1b19; --fg: #d8d4cd; --muted: #8a8580; --subtle: #5a5550;
+        --border: #333028; --accent: #e8845a; --accent-soft: #e8845a15;
+        --code-bg: #252320; --card-bg: #23221f; --quiz-bg: #2a2520;
+        --shadow: 0 1px 3px rgba(0,0,0,0.2);
+        --shadow-lg: 0 4px 20px rgba(0,0,0,0.3);
+      }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; scroll-padding-top: 2rem; }
+    #progress { position: fixed; top: 0; left: 0; height: 3px; background: var(--accent); width: 0%; z-index: 1000; transition: width 0.1s; }
+    #totop {
+      position: fixed; bottom: 2rem; right: 2rem; width: 42px; height: 42px;
+      border-radius: 50%; background: var(--accent); color: #fff; border: none;
+      font-size: 1.2rem; cursor: pointer; opacity: 0; transition: opacity 0.3s, transform 0.3s;
+      transform: translateY(10px); z-index: 999; display: flex; align-items: center; justify-content: center;
+    }
+    #totop.show { opacity: 0.85; transform: translateY(0); }
+    #totop:hover { opacity: 1; transform: translateY(-2px); }
+    body {
+      font-family: "Noto Sans TC", "Crimson Pro", Georgia, serif;
+      line-height: 1.9; color: var(--fg); background: var(--bg);
+      max-width: 720px; margin: 0 auto; padding: 3rem 1.5rem 5rem;
+      font-size: 16.5px; -webkit-font-smoothing: antialiased;
+    }
+    h1.title {
+      font-family: "Crimson Pro", "Noto Sans TC", serif;
+      font-size: 2.8rem; font-weight: 700; text-align: center;
+      letter-spacing: -0.02em; line-height: 1.2;
+      margin: 2rem 0 0.5rem; border: none; color: var(--fg);
+    }
+    h1.title::after {
+      content: ""; display: block; width: 60px; height: 3px;
+      background: var(--accent); margin: 1.2rem auto 0; border-radius: 2px;
+    }
+    .subtitle { text-align: center; color: var(--muted); font-size: 0.92rem; margin-top: 0.8rem; }
+    h1 {
+      font-family: "Noto Sans TC", sans-serif;
+      font-size: 1.65rem; font-weight: 700; margin-top: 4rem; padding-top: 2rem;
+      border-top: 1px solid var(--border); border-bottom: none; line-height: 1.4;
+    }
+    h2 {
+      font-family: "Noto Sans TC", sans-serif;
+      font-size: 1.25rem; font-weight: 700; margin-top: 2.5rem;
+      color: var(--accent); line-height: 1.4; letter-spacing: 0.01em;
+    }
+    h3 { font-size: 1.05rem; font-weight: 700; margin-top: 2rem; color: var(--fg); }
+    p { margin: 0.8rem 0; }
+    a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.2s; }
+    a:hover { border-bottom-color: var(--accent); }
+    ul, ol { padding-left: 1.5rem; margin: 0.8rem 0; }
+    li { margin: 0.3rem 0; }
+    li > ol, li > ul { margin: 0.2rem 0; }
+    blockquote {
+      position: relative; margin: 1.8rem 0; padding: 1rem 1.2rem 1rem 1.5rem;
+      background: var(--accent-soft); border-left: 3px solid var(--accent);
+      border-radius: 0 6px 6px 0; font-size: 0.95rem; color: var(--fg);
+    }
+    blockquote p { margin: 0.4rem 0; }
+    code {
+      font-family: "DM Mono", "SF Mono", Menlo, monospace;
+      background: var(--code-bg); padding: 0.15rem 0.45rem; border-radius: 4px;
+      font-size: 0.85em; color: var(--accent);
+    }
+    pre {
+      background: var(--code-bg); padding: 1.2rem 1.4rem; border-radius: 8px;
+      overflow-x: auto; font-size: 0.82rem; margin: 1.2rem 0; border: 1px solid var(--border);
+    }
+    pre code { background: none; padding: 0; color: var(--fg); }
+    table {
+      width: 100%; border-collapse: separate; border-spacing: 0;
+      margin: 1.5rem 0; font-size: 0.9rem; border-radius: 8px;
+      overflow: hidden; border: 1px solid var(--border);
+    }
+    th, td { padding: 0.65rem 1rem; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background: var(--code-bg); font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+    tr:last-child td { border-bottom: none; }
+    td { background: var(--card-bg); }
+    hr { border: none; height: 1px; background: var(--border); margin: 3.5rem 0; }
+    details {
+      background: var(--quiz-bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 0.8rem 1.2rem; margin: 0.8rem 0 1.8rem;
+      transition: background 0.2s;
+    }
+    details summary {
+      cursor: pointer; font-weight: 600; color: var(--accent);
+      font-size: 0.92rem; list-style: none; display: flex; align-items: center; gap: 0.5rem;
+    }
+    details summary::before { content: "▶"; font-size: 0.7rem; transition: transform 0.2s; display: inline-block; }
+    details[open] summary::before { transform: rotate(90deg); }
+    details summary::-webkit-details-marker { display: none; }
+    details[open] summary { margin-bottom: 0.6rem; }
+    details > p, details > div { font-size: 0.92rem; line-height: 1.7; }
+    nav#TOC {
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 12px; padding: 2rem 2.5rem; margin: 2.5rem 0 3.5rem;
+      box-shadow: var(--shadow-lg);
+    }
+    nav#TOC::before {
+      content: "目錄"; display: block; font-size: 0.8rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted);
+      margin-bottom: 1rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--border);
+    }
+    nav#TOC > ul { padding-left: 0; }
+    nav#TOC ul { list-style: none; padding-left: 1rem; }
+    nav#TOC > ul > li { margin: 0.6rem 0; font-weight: 600; font-size: 0.95rem; }
+    nav#TOC > ul > li > ul { display: none; }
+    nav#TOC > ul > li > a { color: var(--fg); display: block; padding: 0.2rem 0; transition: color 0.2s; }
+    nav#TOC > ul > li > a:hover { color: var(--accent); border-bottom: none; }
+    strong { font-weight: 700; color: var(--fg); }
+    .quiz-block { margin: 1.5rem 0 2.5rem; }
+    .quiz-q { font-weight: 600; margin-bottom: 0.8rem; }
+    .quiz-options { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+    .quiz-opt {
+      padding: 0.65rem 1rem; border: 1px solid var(--border); border-radius: 8px;
+      cursor: pointer; transition: all 0.2s; background: var(--card-bg);
+      font-size: 0.93rem; line-height: 1.6;
+    }
+    .quiz-opt:hover { border-color: var(--accent); background: var(--accent-soft); }
+    .quiz-opt.selected { border-color: var(--accent); background: var(--accent-soft); font-weight: 500; }
+    .quiz-opt.correct { border-color: #4a9; background: #4a92; }
+    .quiz-opt.wrong { border-color: #c44; background: #c4420e; }
+    .quiz-opt.locked { pointer-events: none; opacity: 0.7; }
+    .quiz-opt.locked.correct { opacity: 1; }
+    .quiz-explanation {
+      margin-top: 0.8rem; padding: 0.8rem 1rem; border-radius: 8px;
+      background: var(--quiz-bg); border: 1px solid var(--border);
+      font-size: 0.9rem; line-height: 1.7; display: none;
+    }
+    .quiz-explanation.show { display: block; animation: slideIn 0.3s ease-out; }
+    .quiz-result { font-weight: 600; margin-bottom: 0.3rem; }
+    .quiz-result.pass { color: #4a9; }
+    .quiz-result.fail { color: #c44; }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .quiz-score {
+      text-align: center; padding: 1.5rem; margin: 2rem 0;
+      background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px;
+      box-shadow: var(--shadow);
+    }
+    .quiz-score .score-num { font-size: 2.5rem; font-weight: 700; color: var(--accent); }
+    .quiz-score .score-label { color: var(--muted); font-size: 0.9rem; margin-top: 0.3rem; }
+    #resume-banner {
+      position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 10px; padding: 0.7rem 1rem; box-shadow: var(--shadow-lg);
+      display: flex; align-items: center; gap: 0.8rem; z-index: 998;
+      font-size: 0.88rem; opacity: 0; transition: opacity 0.4s, transform 0.4s;
+      max-width: 90vw;
+    }
+    #resume-banner.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    #resume-text { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #resume-btn {
+      background: var(--accent); color: #fff; border: none; border-radius: 6px;
+      padding: 0.35rem 0.9rem; font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; white-space: nowrap; transition: opacity 0.2s;
+    }
+    #resume-btn:hover { opacity: 0.85; }
+    #resume-dismiss {
+      background: none; border: none; color: var(--subtle); cursor: pointer;
+      font-size: 1rem; padding: 0 0.2rem; line-height: 1;
+    }
+    #resume-dismiss:hover { color: var(--fg); }
+    @media (max-width: 640px) {
+      body { padding: 1.5rem 1rem 4rem; font-size: 15px; }
+      h1.title { font-size: 2rem; }
+      h1 { font-size: 1.4rem; margin-top: 3rem; padding-top: 1.5rem; }
+      nav#TOC { padding: 1.2rem 1.5rem; }
+      table { font-size: 0.8rem; }
+      th, td { padding: 0.4rem 0.6rem; }
+      blockquote { margin: 1.2rem 0; padding: 0.8rem 1rem; }
+      #totop { bottom: 1.2rem; right: 1.2rem; width: 38px; height: 38px; }
+    }
+    @media print {
+      body { max-width: 100%; padding: 0; font-size: 11pt; }
+      #progress, #totop, #resume-banner { display: none; }
+      h1 { break-before: page; }
+      details { border: 1px solid #ccc; }
+      nav#TOC { break-after: page; }
+      a { color: inherit; border: none; }
+      a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 0.8em; color: #666; }
+    }
+  </style>
+</head>
+<body>
+<div id="progress"></div>
+<button id="totop" onclick="window.scrollTo({top:0})">↑</button>
+<header id="title-block-header">
+<h1 class="title">從零開始認識 AI</h1>
+<p class="subtitle">LLM、Agent、以及怎麼跟它們合作</p>
+<p class="subtitle">Hoss Huang · hoss@gofreight.com · March 2026</p>
+</header>
+<h1 id="核心機制llm-是怎麼想的">1.1 核心機制：LLM 是怎麼「想」的</h1>
+<h2 id="一句話版本">一句話版本</h2>
+<p>LLM
+做的事情只有一件：根據前面所有的文字，預測下一個最可能出現的字。</p>
+<h2 id="從預測到理解的錯覺">從預測到理解的錯覺</h2>
+<p>當你問
+ChatGPT「台灣的首都是什麼」，它不是去查資料庫，也不是「知道」答案。它做的事情是：在它讀過的海量文本中，「台灣的首都是」後面最常接的字是「台」「北」。</p>
+<p>這就是 next-token prediction。</p>
+<p>聽起來很蠢對吧？就是在猜下一個字而已。但當你把這個機制放大到幾千億個參數、用整個網路的資料去訓練，一件很神奇的事發生了：這個「猜字遊戲」開始展現出推理、翻譯、寫程式、甚至創作的能力。</p>
+<p>這些能力不是被寫進去的，是從大量的 pattern 中<strong>湧現
+(emerge)</strong> 出來的。而且 LLM 在訓練時其實只讀過這些資料一次（一個
+epoch），不像人類需要反覆複習。讀一次就能學到這麼多，靠的是模型的規模和架構。</p>
+<h2
+id="attention不是每個字都一樣重要">Attention：不是每個字都一樣重要</h2>
+<p>LLM
+在預測下一個字的時候，會回頭看前面所有的文字，但它不是平均地看。它會動態分配權重，決定「哪些字對我現在這個預測比較重要」。這個機制叫做
+<strong>Attention</strong>。</p>
+<h3 id="試試看">試試看</h3>
+<p>閉上眼睛，聽我唸四句話，每句話之後想一下「你接下來最想做什麼」：</p>
+<ol type="1">
+<li>「今天天氣很好，適合出去走走。」</li>
+<li>「今天天氣很好，適合出去走走。但是我的腳受傷了。」</li>
+<li>「今天天氣很好，適合出去走走。但是我的腳受傷了。但是我有一個必須現場參加的會議。」</li>
+<li>「今天天氣很好，適合出去走走。但是我的腳受傷了。但是我有一個必須現場參加的會議。我手邊有一支拐杖。」</li>
+</ol>
+<p>同樣是「今天天氣很好」這幾個字，它的重要性在四句話之間一直在變。第一句的時候很重要，後來越來越不重要。每進來一個新資訊，權重就會重新分配。</p>
+<p>這就是 Attention。LLM 每預測一個字的時候，都在做一模一樣的事。</p>
+<h2 id="關鍵概念">關鍵概念</h2>
+<table>
+<colgroup>
+<col style="width: 40%" />
+<col style="width: 60%" />
+</colgroup>
+<thead>
+<tr>
+<th>概念</th>
+<th>白話解釋</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Token</td>
+<td>LLM 處理文字的最小單位，可以是一個字、一個詞、或詞的一部分</td>
+</tr>
+<tr>
+<td>Next-token prediction</td>
+<td>LLM 的核心運作：根據前文預測下一個最可能的 token</td>
+</tr>
+<tr>
+<td>Attention</td>
+<td>動態分配權重的機制，決定前文中哪些 token 對當前預測最重要</td>
+</tr>
+<tr>
+<td>Emergence</td>
+<td>大規模訓練後自然冒出來的能力，不是被刻意寫進去的</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="quiz">Quiz</h2>
+<p><strong>Q1.</strong> LLM 回答「台灣的首都是台北」，是因為？</p>
+<ul>
+<li><ol type="A">
+<li>它查了資料庫</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>它理解了地理知識</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>「台灣的首都是」後面最常接的字就是「台北」</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>工程師把這個答案寫進程式裡</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+C。LLM 做的是 next-token prediction，根據訓練資料中的統計 pattern
+預測下一個字。
+</details>
+<p><strong>Q2.</strong> 在 Attention
+練習中，「今天天氣很好」這幾個字的重要性隨著新資訊加入而改變。這說明了什麼？</p>
+<ul>
+<li><ol type="A">
+<li>LLM 只看最後一句話</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>LLM 對所有文字給予相同的關注度</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>LLM 會動態調整每個 token 的權重</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>LLM 會忽略前面的句子</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+C。Attention 機制會根據當前的預測需求，動態重新分配前文中每個 token
+的權重。
+</details>
+<hr />
+<h1 id="為什麼-llm-這麼強">1.2 為什麼 LLM 這麼強</h1>
+<h2
+id="不是因為它聰明是因為它見多識廣">不是因為它聰明，是因為它見多識廣</h2>
+<p>一個 LLM
+在訓練過程中讀過的資料量，遠超任何人一輩子能接觸到的。書、論文、程式碼、法律文件、客服對話、維基百科、論壇討論，全部壓進模型的參數裡。</p>
+<p>這代表什麼？它見過幾乎所有你能想到的 pattern。</p>
+<p>當你請它寫一封商務英文信，它不是在「創作」，它是在從見過的幾百萬封商務信中，組合出一個統計上最合理的版本。當你請它
+debug 一段 Python，它是在從見過的幾十億行程式碼中，找到最接近的修正
+pattern。</p>
+<h2 id="強在哪裡">強在哪裡</h2>
+<h3 id="pattern-存在的地方它都能幫">1. Pattern 存在的地方，它都能幫</h3>
+<p>只要一件事在人類留下的文字中有足夠多的範例，LLM 就能做得不錯：</p>
+<ul>
+<li>翻譯：因為平行語料庫數量龐大</li>
+<li>摘要：因為「長文 → 重點」的 pattern 到處都有</li>
+<li>程式碼生成：因為 GitHub 上有幾十億行 open source code</li>
+<li>格式轉換：因為 JSON、CSV、XML 之間的轉換在訓練資料中大量出現</li>
+</ul>
+<h3 id="夠好的任務它速度碾壓">2. 「夠好」的任務，它速度碾壓</h3>
+<p>很多工作不需要完美，需要的是速度跟覆蓋率。LLM
+在這類任務上超有優勢：</p>
+<ul>
+<li>生成初稿讓人類修改，比人類從零開始快 5-10 倍</li>
+<li>分類一千封 email 的意圖，不需要 100% 正確，90% 就夠用</li>
+<li>把會議逐字稿整理成結構化筆記，不完美但省下 80% 的時間</li>
+</ul>
+<h3 id="跨領域的通用性">3. 跨領域的通用性</h3>
+<p>傳統 AI 是一個模型做一件事。要做情感分析就訓練一個情感分析模型，要做
+NER 就訓練一個 NER 模型。</p>
+<p>LLM 是一個模型做一百件事。同一個 Claude 或 GPT，可以翻譯、寫
+code、分析法律條文、生成測試資料、整理會議記錄。你不需要為每個任務重新訓練，只需要給不同的
+prompt。</p>
+<p>這是一個 paradigm shift：從 task-specific model 變成 general-purpose
+platform。</p>
+<h3 id="但它不是萬能的car-wash-test">但它不是萬能的：Car Wash Test</h3>
+<p>有一個很好的例子可以說明 LLM 的「強」到底是什麼性質的強。</p>
+<blockquote>
+<p>問題：「我想洗車。洗車場在 50 公尺外。我應該走路還是開車去？」</p>
+</blockquote>
+<p>在 53 個主流模型的測試中，只有 11 個第一次就答對。其他 42
+個都回答「50 公尺很近，走路比較環保、省油」。</p>
+<p>它們完全忽略了一個最基本的事實：你要洗的是車，車本身要到洗車場啊。</p>
+<p>這不是因為模型「笨」。它是因為訓練資料中「短距離 → 走路」這個 pattern
+太強了。模型在做 pattern matching，不是在做 contextual
+reasoning。當正確答案需要跳脫常見 pattern 時，LLM 就容易出錯。</p>
+<p>更值得注意的是一致性測試：讓每個模型回答同一個問題 10 次，只有 5
+個模型能 10 次都答對。很多模型有時對、有時錯，表現不穩定。</p>
+<p>相比之下，10,000 個人類測試者中有 71.5% 答對，表現超過 53 個模型中的
+46 個。</p>
+<p>這告訴我們：LLM 的強是建立在 pattern 的強上。當問題需要的不是 pattern
+而是 reasoning
+時，它就容易出包。理解這一點，你才知道什麼時候該信任它、什麼時候該多想一步。</p>
+<blockquote>
+<p>參考：<a href="https://opper.ai/blog/car-wash-test">The Car Wash
+Test</a>（2026 年初的測試結果，模型排名會隨時間變動）</p>
+</blockquote>
+<h2 id="為什麼現在特別強">為什麼「現在」特別強</h2>
+<p>這不是一夜之間發生的。三個因素同時成熟：</p>
+<table>
+<colgroup>
+<col style="width: 35%" />
+<col style="width: 64%" />
+</colgroup>
+<thead>
+<tr>
+<th>因素</th>
+<th>發生了什麼</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>資料規模</td>
+<td>網路累積了幾十年的文字內容，提供前所未有的訓練資料量</td>
+</tr>
+<tr>
+<td>算力突破</td>
+<td>GPU 集群讓訓練幾千億參數的模型變得可行</td>
+</tr>
+<tr>
+<td>架構創新</td>
+<td>2017 年的 <a href="https://arxiv.org/abs/1706.03762">Transformer
+架構</a>讓 Attention 機制可以大規模平行運算</td>
+</tr>
+</tbody>
+</table>
+<p>這三個條件缺一不可。十年前有資料但沒算力，有算力但沒
+Transformer。現在三者同時到位，所以 LLM 的能力在短短幾年內爆發。</p>
+<p>重點是：這三個因素都還在加速。模型會繼續變大、變快、變便宜。今天做不到的事，不代表明年也做不到。</p>
+<h2
+id="網路資料都用完了為什麼新模型還能更強">網路資料都用完了，為什麼新模型還能更強？</h2>
+<p>一個合理的問題：如果現有模型已經把整個網路的資料都讀過了，下一代模型要靠什麼變得更強？</p>
+<p>答案是：更多的資料不是唯一的進步方向。</p>
+<h3 id="推理訓練-reasoning-training">1. 推理訓練 (Reasoning
+Training)</h3>
+<p>早期的 LLM 只學會了「預測下一個字」。新一代模型（如 o3、Claude
+Opus）在訓練過程中額外加入了推理能力的強化。</p>
+<p>具體做法是在推理時讓模型花更多時間「思考」（thinking
+tokens），而不是直接輸出第一個想到的答案。就像考試時，從「憑直覺秒答」進化成「先在草稿紙上推演再作答」。花的時間多了，但準確度大幅提升。</p>
+<h3 id="合成資料-synthetic-data">2. 合成資料 (Synthetic Data)</h3>
+<p>用現有的強模型去生成高品質的訓練資料，再用這些資料訓練下一代模型。聽起來像「自己教自己」，但重點是你可以精確控制合成資料的品質和分布，補上真實資料不夠的地方。</p>
+<p>例如：真實世界的數學證明資料很少，但你可以讓強模型生成幾百萬道數學題和解題過程，用來訓練下一代模型的數學推理能力。</p>
+<h3 id="架構改進">3. 架構改進</h3>
+<p>Transformer 不是終點。研究者一直在改進模型架構：更高效的 attention
+機制、更好的記憶結構、更低的推理成本。同樣的資料量，用更好的架構就能學到更多東西。</p>
+<h3 id="更好的訓練方法">4. 更好的訓練方法</h3>
+<p>RLHF（Reinforcement Learning from Human
+Feedback）讓模型學會了「人類覺得什麼是好的回答」。新的訓練方法持續在改善模型對指令的遵循能力、安全性、和一致性。</p>
+<p>所以進步的來源不只是「餵更多資料」，而是多管齊下：</p>
+<table>
+<thead>
+<tr>
+<th>進步方向</th>
+<th>效果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>推理訓練</td>
+<td>同一個模型，花更多時間思考，得到更好的答案</td>
+</tr>
+<tr>
+<td>合成資料</td>
+<td>填補真實資料的空白，強化特定能力</td>
+</tr>
+<tr>
+<td>架構改進</td>
+<td>同樣的資料，學到更多、推理更快</td>
+</tr>
+<tr>
+<td>訓練方法</td>
+<td>更好地對齊人類的期望和偏好</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="quiz-1">Quiz</h2>
+<p><strong>Q1.</strong> Car Wash Test
+裡，大部分模型回答「走路去洗車場」。為什麼它們會答錯？</p>
+<ul>
+<li><ol type="A">
+<li>模型沒有被訓練過洗車相關的資料</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>「短距離 → 走路」這個 pattern 太強，蓋過了情境推理</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>模型的 context window 不夠大</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>問題的中文太難理解</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+B。訓練資料中「50 公尺 → 走路」的 pattern
+出現頻率遠高於「洗車需要把車開過去」的推理。LLM 是在做 pattern
+matching，當正確答案需要跳脫常見 pattern 時就容易出包。
+</details>
+<p><strong>Q2.</strong>
+網路資料都用得差不多了，新模型還能更強，主要靠什麼？（複選）</p>
+<ul>
+<li><ol type="A">
+<li>推理訓練：讓模型花更多時間思考</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>找到更多還沒被爬過的網站</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>合成資料：用強模型生成訓練資料</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>架構改進：同樣的資料學到更多</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+A、C、D。進步的方向已經從「餵更多資料」轉向推理訓練、合成資料、架構改進和訓練方法的多管齊下。
+</details>
+<p><strong>Q3.</strong> LLM 幫你寫的商務英文信品質很好，這代表？</p>
+<ul>
+<li><ol type="A">
+<li>LLM 理解商務禮儀</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>訓練資料中有大量類似的信件，它組合出統計上最合理的版本</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>LLM 有商務溝通的專業知識</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>LLM 在即時查詢商務信範本</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+B。LLM 的能力建立在 pattern
+上。訓練資料中商務信的範例夠多，所以它組合出來的結果品質不錯。
+</details>
+<hr />
+<h1 id="天花板在哪裡">1.3 天花板在哪裡</h1>
+<h2 id="llm-不是什麼都行">LLM 不是什麼都行</h2>
+<p>理解 LLM
+為什麼強之後，接下來要理解它為什麼會失敗。不是要潑冷水，是因為知道天花板在哪，你才知道怎麼設計有效的解決方案。</p>
+<p>每個限制背後都有原因，而且不是「AI 還不夠聰明」這麼簡單。</p>
+<h2 id="四個根本限制">四個根本限制</h2>
+<h3 id="沒有世界模型-no-world-model">1. 沒有世界模型 (No World
+Model)</h3>
+<p>LLM 學到的是文字之間的統計關係，不是對世界的真正理解。</p>
+<p>它知道「水在 100°C
+會沸騰」，是因為這句話在訓練資料中出現過很多次，不是因為它理解什麼是水、什麼是溫度、什麼是沸騰。</p>
+<p>這就是 <strong>hallucination（幻覺）</strong> 的根源。當 LLM
+遇到訓練資料中沒有足夠 pattern
+的問題，它不會說「我不知道」。它會生成一個統計上看起來合理、但事實上錯誤的答案。因為它的目標是「產出最可能的下一個字」，不是「產出正確的答案」。</p>
+<blockquote>
+<p>實際案例：有一個負責處理 email 的
+Agent，要依序呼叫四個工具。但它沒有等第一步的結果回來，就直接編造了後面三步的參數。訂單編號是假的，負責人的名字也不存在。它不是故意亂寫，它是在預測「最可能的參數值」。</p>
+</blockquote>
+<p><strong>在改善嗎？</strong> 是。更大的模型、更好的 reasoning 訓練（如
+Chain-of-Thought）正在提升推理能力。但骨子裡它仍然是 pattern
+matching，不是 logical reasoning。</p>
+<h3 id="有限的-context-window">2. 有限的 Context Window</h3>
+<p>LLM 一次能「看到」的文字量是有限的，這就是 context
+window。超出這個範圍的資訊，它就是看不到。</p>
+<p>而且 context window 不只是大小的問題。就算在 window
+之內，資訊太多、太雜，模型的注意力也會被稀釋。</p>
+<p>還記得 1.1 的 Attention 練習嗎？再加一個情境：</p>
+<blockquote>
+<p>你的腳受傷了，必須去開會。你手邊有：一袋垃圾、一份過期報紙、一支拐杖。</p>
+</blockquote>
+<p>你還是會選拐杖。但那些垃圾和報紙消耗了你的注意力，即使它們沒用。這就是
+<strong>noise</strong>。</p>
+<p>再換一個：</p>
+<blockquote>
+<p>你手邊有：一把雨傘、一支掃把、一支登山杖、一支拐杖。</p>
+</blockquote>
+<p>這四個東西長得像、功能有重疊。你開始猶豫了。這就是
+<strong>ambiguity</strong>。</p>
+<p>對 LLM 來說，noise 浪費算力但通常不致命，ambiguity
+才是真正讓它出錯的原因。</p>
+<p><strong>有在進步嗎？</strong> Context window 從 GPT-3.5 的 4K tokens
+到現在動輒 128K-1M tokens。但 window 變大不代表理解變好，noise 和
+ambiguity 的問題還是在。</p>
+<h3 id="沒有持久記憶-no-persistent-memory">3. 沒有持久記憶 (No
+Persistent Memory)</h3>
+<p>每次對話，LLM
+都是從零開始。它不記得昨天跟你聊了什麼、上週做了什麼決定、你的偏好是什麼。</p>
+<p>它唯一的「記憶」就是當前 context window
+裡的內容。對話結束，一切歸零。</p>
+<p>這代表： - 它無法從過去的錯誤中學習 - 它無法追蹤長期的專案進度 -
+每次互動都要重新提供背景資訊</p>
+<p><strong>有解嗎？</strong> 各家都在做 memory 功能（ChatGPT 的
+memory、Claude 的 project
+knowledge），但目前都是外掛的，模型本身還是不會記。</p>
+<h3 id="無法自我驗證-no-self-verification">4. 無法自我驗證 (No
+Self-Verification)</h3>
+<p>LLM
+沒有辦法確認自己的輸出是否正確。它生成一個答案之後，無法回頭檢查這個答案是否符合事實、是否邏輯一致、是否真的能執行。</p>
+<p>它就像一個永遠自信滿滿的人，即使說錯了也不會臉紅。</p>
+<p><strong>天花板在移動嗎？</strong> 有，但有限。Reasoning model（如
+o3）會在內部做更多推理步驟，但它終究無法自己去外部系統查證事實。</p>
+<h2 id="一張表看限制與趨勢">一張表看限制與趨勢</h2>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 31%" />
+<col style="width: 48%" />
+</colgroup>
+<thead>
+<tr>
+<th>限制</th>
+<th>根本原因</th>
+<th>目前的緩解方向</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hallucination</td>
+<td>統計預測，非事實推理</td>
+<td>更強的 reasoning 訓練、RAG</td>
+</tr>
+<tr>
+<td>Context 有限</td>
+<td>固定的 window + attention 稀釋</td>
+<td>更大的 window、更好的 context 管理</td>
+</tr>
+<tr>
+<td>沒有記憶</td>
+<td>每次推理獨立，無狀態</td>
+<td>外掛 memory 系統</td>
+</tr>
+<tr>
+<td>無法驗證</td>
+<td>不能存取外部系統</td>
+<td>Tool use、code execution</td>
+</tr>
+</tbody>
+</table>
+<p>注意最右邊那一欄。Agent 的出現，就是為了補上 LLM
+單獨運作時的這些不足。下一個 Part 我們就來聊這個。</p>
+<hr />
+<h2 id="quiz-2">Quiz</h2>
+<p><strong>Q1.</strong> 一個 AI agent 在處理 email
+時，編造了不存在的訂單編號。這是哪個限制造成的？</p>
+<ul>
+<li><ol type="A">
+<li>Context window 太小</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>沒有持久記憶</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>沒有世界模型（hallucination）</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>無法自我驗證</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+C。模型沒有等真實資料回來，直接預測了「最可能的參數值」。它不知道自己在瞎編，因為它的目標是產出統計上合理的下一個
+token。
+</details>
+<p><strong>Q2.</strong> 情境題：你把一份 200
+頁的合約和三份無關的會議記錄一起丟給 LLM，問它合約的關鍵條款。LLM
+的回答品質可能因為什麼下降？</p>
+<ul>
+<li><ol type="A">
+<li>合約太長，超過 context window</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>會議記錄是 noise，稀釋了 attention</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>LLM 不懂法律</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>A 和 B 都有可能</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+D。200 頁可能超過 context window（限制
+2），即使沒超過，無關的會議記錄也會作為 noise 稀釋模型的注意力（限制 2
+的另一面）。
+</details>
+<p><strong>Q3.</strong> 以下哪個問題 LLM 最容易答錯？</p>
+<ul>
+<li><ol type="A">
+<li>把這段英文翻譯成中文</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>這家公司上季的營收是多少</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>幫我把這段 JSON 轉成 CSV</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>幫我摘要這篇文章</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+B。營收是需要查證的即時事實，LLM
+的訓練資料不會有最新的數字，而且它無法自己去查。翻譯、格式轉換、摘要都是
+pattern 很強的任務。
+</details>
+<hr />
+<h1 id="什麼是-agent">2.1 什麼是 Agent</h1>
+<h2 id="llm-會想agent-會做">LLM 會想，Agent 會做</h2>
+<p>上一章我們知道 LLM
+是很強的「思考引擎」，但它只能輸出文字。它不能查資料庫、不能寄
+email、不能跑程式、不能操作任何外部系統。</p>
+<p>Agent 就是把這個思考引擎接上手腳。</p>
+<p>一個 Agent 的組成很簡單：</p>
+<pre><code>Agent = LLM + Tools + Loop</code></pre>
+<ul>
+<li><strong>LLM</strong>：負責理解目標、拆解步驟、做決策</li>
+<li><strong>Tools</strong>：LLM
+可以呼叫的外部能力（API、資料庫、搜尋引擎、shell 指令等）</li>
+<li><strong>Loop</strong>：Plan → Act → Observe → Reflect 的循環，讓
+Agent 可以根據結果調整下一步</li>
+</ul>
+<h2 id="plan-act-reflect-循環">Plan-Act-Reflect 循環</h2>
+<p>舉一個具體的例子。你跟 Agent 說：「幫我查一下這封 email
+的訂單狀態，然後指派給負責人。」</p>
+<p>Agent 不會一次把所有事做完。它會進入一個循環：</p>
+<ol type="1">
+<li><strong>Plan</strong>：拆解任務。「我需要先分析 email
+附件拿到訂單編號，再用編號查訂單，再查負責人，最後建立待辦事項。」</li>
+<li><strong>Act</strong>：執行第一步。呼叫附件分析
+API，拿到訂單編號。</li>
+<li><strong>Observe</strong>：檢查結果。分析成功，訂單編號 =
+ORD-25080042。</li>
+<li><strong>Reflect</strong>：成功了，進入下一步。用這個編號去查訂單詳情。</li>
+</ol>
+<p>如果第三步失敗了呢？Agent 會回到 Plan，調整策略再試。</p>
+<p>這個循環就是 Agent 跟普通 LLM 呼叫的根本差異。普通的 LLM 呼叫是
+one-shot：你問一次，它答一次。Agent
+是一個持續的決策迴圈，直到任務完成或確定無法完成。</p>
+<h2 id="agent-也可以跑-workflow">Agent 也可以跑 Workflow</h2>
+<p>一個常見的誤解是：Workflow 跟 Agent
+是兩種不同的東西，要選一個用。</p>
+<p>其實不是。只要你把流程寫清楚，Agent
+完全可以照著固定步驟走。差別在於你怎麼下指令：</p>
+<ul>
+<li><strong>指令很嚴格</strong>（「先做 A，等 A 完成再做 B，B 完成再做
+C」）→ Agent 的行為跟 workflow 一樣，可預測、可控</li>
+<li><strong>指令很鬆</strong>（「幫我處理這封 email」）→ Agent
+自己決定怎麼做，彈性高但不一定每次走一樣的路</li>
+</ul>
+<p>所以起步的時候，直接用 Agent
+配上清楚的指令來跑你的流程就好。好處是迭代快，改指令就改行為，不用動程式碼。</p>
+<p>那什麼時候才需要 hard-coded workflow（像 n8n
+這類工具）？當你的流程已經穩定、跑了一陣子確認沒問題之後，可以把不需要
+LLM 推理的步驟抽出來用程式跑。目的是省 token 成本，因為每一步經過 LLM
+都在燒錢。</p>
+<p>簡單說就是一條成熟路徑：</p>
+<pre><code>用 Agent + 清楚指令跑流程（快速迭代）
+  → 流程穩定後，把不需要推理的步驟抽到 hard-coded workflow（省成本）</code></pre>
+<p>先用 context 跑通，再用 code 優化。</p>
+<h2 id="最後的抽象">「最後的抽象」</h2>
+<p>回顧軟體發展史：</p>
+<ul>
+<li><strong>物件導向</strong>：把程式碼結構化</li>
+<li><strong>微服務</strong>：把系統結構化</li>
+<li><strong>API</strong>：把服務之間的溝通結構化</li>
+</ul>
+<p>但每一層抽象裡，都還是人類在寫邏輯。人類一直都是「商業需求」跟「程式碼」之間的翻譯者。</p>
+<p>Agent
+改變了這件事。你給它一個<strong>目標</strong>，而不是一個腳本。它自己決定怎麼達成。</p>
+<p>這是軟體史上第一次，我們可以圍繞<strong>意圖</strong>來設計系統，而不是圍繞<strong>邏輯</strong>。</p>
+<hr />
+<h2 id="quiz-3">Quiz</h2>
+<p><strong>Q1.</strong> Agent 跟單純的 LLM
+呼叫，最關鍵的差異是什麼？</p>
+<ul>
+<li><ol type="A">
+<li>Agent 用的模型比較大</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>Agent 有 Plan-Act-Reflect 循環，可以根據結果調整</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>Agent 可以理解中文</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>Agent 不會產生 hallucination</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+B。單純的 LLM 呼叫是 one-shot（問一次答一次），Agent
+是持續的決策迴圈，可以觀察結果、調整策略再試。
+</details>
+<p><strong>Q2.</strong> 你要做一個功能：收到客戶 email
+後，自動分類並轉給對應的團隊。應該用 Workflow 還是 Agent？</p>
+<ul>
+<li><ol type="A">
+<li>Agent，因為比較先進</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>Workflow，因為分類完之後的流程是固定的</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>兩者都不需要，直接用 LLM 就好</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>看心情</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+B。這個場景中，LLM 只負責分類，後續流程是固定的 if-else
+規則。不需要動態決策，用 Workflow 就夠了，更可控、更便宜。
+</details>
+<hr />
+<h1 id="agent-如何補完-llm-的限制">2.2 Agent 如何補完 LLM 的限制</h1>
+<h2 id="不是修補是完成">不是修補，是完成</h2>
+<p>Part 1 我們談了 LLM 的四個根本限制。Agent
+架構裡的每個元素，剛好對應其中一個限制。這不是巧合，這就是 Agent
+存在的理由。</p>
+<h2 id="memory-跨越-context-的連續性">Memory → 跨越 Context
+的連續性</h2>
+<p>LLM
+每次推理都是獨立的，對話結束就忘記一切。就像一個每天早上醒來就失憶的人，不管昨天跟你聊了什麼、做了什麼決定，今天都要重新來過。</p>
+<p>Agent 透過外部的 memory 系統解決這個問題。概念很簡單：既然 LLM
+自己記不住，就把重要的事情寫在「筆記本」上，下次需要的時候再翻開來看。</p>
+<p>具體來說： -
+<strong>對話結束前，把重要結論寫下來</strong>（存到檔案或資料庫） -
+<strong>下次對話開始時，先把筆記載入 context</strong>（讓 LLM
+看到之前的紀錄） -
+<strong>隨著互動越來越多，筆記越來越豐富</strong>（Agent
+對你、對任務的「理解」持續累積）</p>
+<p>這跟你用便利貼提醒自己明天要做的事是一樣的道理。LLM
+的「大腦」不會記住，但它的「筆記本」會。</p>
+<blockquote>
+<p>舉例：一個客服 Agent 在第一次對話中得知客戶 A 偏好用 email
+而不是電話溝通。它把這件事寫進 memory。下次客戶 A 再來詢問，Agent 讀取
+memory 後就知道不需要問溝通偏好，直接用 email
+回覆。客戶感覺到「它記得我」，但其實只是筆記寫得好。</p>
+</blockquote>
+<h2 id="tools-接上真實世界">Tools → 接上真實世界</h2>
+<p>LLM 的輸出只有文字。但透過 Tool Use，LLM
+的文字輸出可以變成對外部系統的操作。</p>
+<p>Tool Use 的核心其實很簡單：LLM 被訓練成能穩定輸出結構化的格式（通常是
+JSON），這個 JSON 就是呼叫外部 API 的參數。LLM
+不是真的在「操作」系統，它是在「描述」要做什麼操作，然後由程式去執行。</p>
+<p>這解決了兩個限制： -
+<strong>Hallucination</strong>：不再靠猜，而是透過 API
+查詢真實資料（這就是 RAG 的概念） - <strong>無法驗證</strong>：Agent
+可以呼叫工具去檢查自己的輸出是否正確（例如執行程式碼看是否會報錯）</p>
+<blockquote>
+<p>舉例：當 Agent 需要知道一筆訂單的狀態，它不是憑訓練資料去猜，而是呼叫
+API 去查。拿到真實資料後再做判斷。Ground truth
+來自系統，不來自模型。</p>
+</blockquote>
+<h3 id="順帶一提fine-tuning">順帶一提：Fine-tuning</h3>
+<p>另一種讓 LLM 獲得特定能力的方式是
+<strong>fine-tuning</strong>：拿你自己的資料對模型做進一步訓練，直接改變模型內部的參數。</p>
+<p>跟 RAG 的差別：RAG 是在 context 裡塞資料讓模型「看到」，fine-tuning
+是把知識「烙進」模型裡。</p>
+<p>聽起來很強，但代價不小： -
+<strong>成本高</strong>：需要準備大量高品質的訓練資料，訓練過程也燒錢 -
+<strong>風險大</strong>：研究顯示 fine-tuning
+可能破壞模型原本的安全對齊（safety alignment
+collapse），即使訓練資料本身沒問題 -
+<strong>不好更新</strong>：知識變了就要重新訓練，不像 RAG 改資料就好</p>
+<p>所以除非你有很明確的「行為改變」需求（例如讓模型用特定格式輸出、學會一種特殊語氣），通常先用
+RAG + Context Engineering 就夠了。這也是這份指南一直在強調的方向：先用
+context 解決問題，能不動模型就不動。</p>
+<h2 id="loop-透過驗證自我修正">Loop → 透過驗證自我修正</h2>
+<p>One-shot 的 LLM 呼叫，錯了就是錯了，沒有第二次機會。</p>
+<p>Agent 的 Plan-Act-Reflect 循環讓它可以： 1. 執行一個動作 2. 觀察結果
+3. 判斷是否符合預期 4. 如果不對，調整策略再試</p>
+<p>這等於給了 LLM
+一個它原本不具備的能力：<strong>自我修正</strong>。</p>
+<p>靠的是架構，不是更聰明的模型。一個 80% 準確率的
+LLM，放進有驗證機制的循環裡，整體系統的可靠度可以遠超 80%。</p>
+<blockquote>
+<p>實際應用：Claude Code
+在寫完程式碼後會自動執行測試。如果測試失敗，它會讀錯誤訊息、分析原因、修改程式碼、再次測試。這個循環可能跑好幾輪，直到測試通過。</p>
+</blockquote>
+<h2 id="對照表">對照表</h2>
+<table>
+<colgroup>
+<col style="width: 28%" />
+<col style="width: 43%" />
+<col style="width: 28%" />
+</colgroup>
+<thead>
+<tr>
+<th>LLM 的限制</th>
+<th>Agent 的對應元素</th>
+<th>怎麼解決的</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>沒有世界模型 (Hallucination)</td>
+<td>Tools (RAG, API)</td>
+<td>從真實系統取得 ground truth</td>
+</tr>
+<tr>
+<td>有限的 Context</td>
+<td>Memory</td>
+<td>把重要資訊持久化，需要時載入</td>
+</tr>
+<tr>
+<td>沒有記憶</td>
+<td>Memory</td>
+<td>跨對話保持連續性</td>
+</tr>
+<tr>
+<td>無法自我驗證</td>
+<td>Loop + Tools</td>
+<td>執行後觀察結果，失敗就調整重試</td>
+</tr>
+</tbody>
+</table>
+<p>Agent 不是比較厲害的 LLM。它是一套用 LLM 當決策核心的系統架構。LLM
+負責想，其他元件負責記、做、驗。</p>
+<hr />
+<h2 id="quiz-4">Quiz</h2>
+<p><strong>Q1.</strong> 配對題：LLM 的哪個限制，對應到 Agent
+的哪個元素？</p>
+<table>
+<thead>
+<tr>
+<th>LLM 的限制</th>
+<th>Agent 的元素</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. Hallucination</td>
+<td>a. Loop + Tools</td>
+</tr>
+<tr>
+<td>2. 沒有記憶</td>
+<td>b. Tools (RAG, API)</td>
+</tr>
+<tr>
+<td>3. 無法自我驗證</td>
+<td>c. Memory</td>
+</tr>
+</tbody>
+</table>
+<details>
+<summary>
+答案
+</summary>
+1-b、2-c、3-a。Hallucination 靠 Tools 查真實資料解決；沒有記憶靠 Memory
+把重要事情寫下來；無法驗證靠 Loop + Tools 執行後檢查結果。
+</details>
+<p><strong>Q2.</strong> 一個客服 Agent 記得客戶 A 偏好用 email
+溝通。這個「記得」是怎麼做到的？</p>
+<ul>
+<li><ol type="A">
+<li>模型本身學會了客戶 A 的偏好</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>上次對話時把偏好寫進外部儲存，這次載入 context</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>每次都重新問客戶</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>工程師把客戶偏好寫在程式碼裡</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+B。LLM 本身不會記住任何事。Memory
+的做法是把重要資訊寫到外部（檔案、資料庫），下次對話開始時載入 context
+讓 LLM 看到。
+</details>
+<hr />
+<h1 id="agent-的現況能做什麼還不能做什麼">2.3 Agent
+的現況：能做什麼、還不能做什麼</h1>
+<h2 id="agent-不是萬能的">Agent 不是萬能的</h2>
+<p>Agent 補上了 LLM
+的不足，但也帶來了自己的問題。搞清楚這些問題，才能在實務上做出對的設計決策。</p>
+<h2 id="三個尚未解決的問題">三個尚未解決的問題</h2>
+<h3 id="成本-cost">1. 成本 (Cost)</h3>
+<p>Agent 的 Plan-Act-Reflect 循環中，每一步都可能需要呼叫一次
+LLM。一個複雜任務可能跑十幾輪循環，每一輪都在燒 API credits。</p>
+<table>
+<thead>
+<tr>
+<th>使用方式</th>
+<th>大約成本</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>單次 LLM 呼叫</td>
+<td>$0.01-0.10</td>
+</tr>
+<tr>
+<td>Agent 完成一個多步驟任務</td>
+<td>$0.50-5.00</td>
+</tr>
+<tr>
+<td>企業級 Agent 對話</td>
+<td>$2.00+</td>
+</tr>
+</tbody>
+</table>
+<p>這代表你不能把 Agent
+用在所有事情上。它適合高價值、多步驟的任務，不適合用來回答一個簡單問題。</p>
+<p><strong>趨勢：</strong>
+推理成本正在快速下降。同一個時期，不同模型的推理速度差異可以超過 10
+倍（例如 o3-pro 約 23 tokens/s，而 Gemini 2.5 Flash 可達數百
+tokens/s）。更小但更聰明的模型（如各家的 mini/flash
+系列）讓日常任務的成本大幅降低，只在真正需要深度推理時才動用昂貴的大模型。</p>
+<h3 id="規劃複雜度-planning-complexity">2. 規劃複雜度 (Planning
+Complexity)</h3>
+<p>當任務步驟超過 5-6 步，可能的執行路徑會爆炸性成長。Agent
+只要一步順序錯了，整個任務就可能失敗。</p>
+<blockquote>
+<p>舉例：有個 Agent 負責處理
+email，要依序跑四個步驟，每一步的輸出是下一步的輸入。但較小的模型直接跳過等待，同時呼叫四個工具，編造了不存在的參數。</p>
+</blockquote>
+<p>這不完全是模型的問題，也是架構的問題。你可以透過： - 更好的 prompt
+設計來約束執行順序 - 把複雜任務拆成多個小 agent 協作 - 用 workflow
+固定關鍵路徑，只在需要判斷的地方讓 agent 介入</p>
+<p>另一個容易踩的坑：<strong>給 Agent 太多工具反而會讓它變笨。</strong>
+每個工具定義都會佔 context 空間，工具太多會稀釋 attention，讓 Agent
+在不該用某個工具的時候去用它。挑選 Agent 需要的工具時，少即是多。</p>
+<p>但即使做了這些，長鏈任務的可靠性仍然是 agent 最大的挑戰。</p>
+<p><strong>趨勢：</strong> 更強的 reasoning model（如 o3、Claude
+Opus）在遵循複雜指令方面明顯進步。而且模型升級有時候比改 prompt
+更有效。把模型從一個 120B 參數的模型換到 671B
+參數的模型後，幻覺問題直接消失了。更大的模型有更強的能力去處理複雜
+context 中的細微差別，不容易在多步驟任務中「跳步」。</p>
+<h3 id="安全性-safety">3. 安全性 (Safety)</h3>
+<p>Agent
+能操作外部系統，這代表它的錯誤不只是「回答錯誤」，而是「做錯事」。</p>
+<p>LLM 亂講頂多給你一個錯誤的答案。但 Agent 亂來的話，可能寄出不該寄的
+email、刪掉不該刪的資料、或對外部系統做出無法挽回的操作。</p>
+<p>單靠 prompt 無法防範所有惡意攻擊（Prompt
+Injection、Jailbreak）。實務上的做法：</p>
+<ol type="1">
+<li><strong>Guardrails</strong>：在 input 進入主 Agent
+前，先用一個小模型過濾惡意意圖</li>
+<li><strong>限制影響範圍 (Blast Radius)</strong>：不要給 Agent
+超出必要的權限。絕對不要讓 Agent 直接寄
+email，而是讓它產生草稿，由人類確認後才送出</li>
+<li><strong>Human-in-the-Loop
+(HITL)</strong>：在關鍵決策點設計人類審核機制</li>
+</ol>
+<blockquote>
+<p><a
+href="https://blogs.cisco.com/ai/open-model-vulnerability-analysis">研究指出</a>，針對主流模型的多輪
+jailbreak 攻擊成功率可達 90% 以上。資安的原則是：有 1%
+被攻破的風險就算不及格。</p>
+</blockquote>
+<h2 id="human-in-the-loop-不是退讓">Human-in-the-Loop 不是退讓</h2>
+<p>HITL 常被誤解成「AI
+不夠好才需要人來幫忙」。但其實這是刻意的設計決策：</p>
+<ul>
+<li>AI 負責繁重的工作：分析、搜尋、草擬、分類</li>
+<li>人類負責最終決策：確認、批准、修正</li>
+</ul>
+<p>這種分工結合了 AI
+的速度跟人類的判斷力。這不是暫時的妥協，短期內高風險的場景都需要這個機制。</p>
+<p>好的 HITL 設計不是讓使用者在對話框裡空等。Agent
+應該在背景執行，需要人類確認時再彈出通知或
+Widget。使用者的核心任務從「操作」轉變為「驗證」。</p>
+<h3 id="安全直覺需要時間養成">安全直覺需要時間養成</h3>
+<p>講一個現實：大部分人剛開始用 Agent
+的時候，不會認真對待安全性。正常的學習曲線大概是這樣：</p>
+<ol type="1">
+<li>開始用，覺得每次都要確認權限很煩</li>
+<li>關掉權限提示，進入「什麼都放行」模式</li>
+<li>用久了，慢慢發展出自己的安全直覺</li>
+</ol>
+<p>希望在第 2 到第 3 步之間不要出事。</p>
+<p>一個幫助建立直覺的思考方式：<strong>你不會把自己的帳號密碼分享給最好的同事吧？但如果你給
+Agent 不受限制的存取權限，你做的其實是一樣的事。</strong></p>
+<p>不用一開始就把安全搞得很完美，但至少要意識到風險在哪。隨著你使用
+Agent 的經驗越來越多，你會自然發展出「這個權限該不該給」的判斷力。</p>
+<h2 id="現況總結">現況總結</h2>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>面向</th>
+<th>現在</th>
+<th>趨勢</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>成本</td>
+<td>複雜任務仍然昂貴</td>
+<td>推理成本快速下降</td>
+</tr>
+<tr>
+<td>規劃</td>
+<td>超過 5-6 步開始不穩定</td>
+<td>更強的 reasoning model 持續改善</td>
+</tr>
+<tr>
+<td>安全</td>
+<td>需要 guardrails + HITL</td>
+<td>安全機制正在標準化，但仍不可省略</td>
+</tr>
+<tr>
+<td>適用場景</td>
+<td>高價值、有明確 tools 的任務</td>
+<td>隨成本下降，適用範圍持續擴大</td>
+</tr>
+</tbody>
+</table>
+<p>Agent
+正在快速進化，但今天做設計不該建立在「反正以後會更好」的假設上。先用今天可靠的方式做，同時預留升級空間。</p>
+<hr />
+<h2 id="quiz-5">Quiz</h2>
+<p><strong>Q1.</strong> 你的 Agent 需要幫客戶發送 email
+確認訂單。以下哪個設計最安全？</p>
+<ul>
+<li><ol type="A">
+<li>讓 Agent 直接寄出 email</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>讓 Agent 產生 email 草稿，人類確認後才寄出</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>用 prompt 告訴 Agent「不要寄錯」</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>用比較貴的模型就不會出錯</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+B。限制影響範圍（blast radius）是關鍵。Agent
+產生草稿，人類做最終確認，這就是 Human-in-the-Loop。
+</details>
+<p><strong>Q2.</strong> 一個 Agent 在處理 10 步驟的任務時，第 7
+步開始出錯。以下哪個做法最不建議？</p>
+<ul>
+<li><ol type="A">
+<li>換一個更大的模型試試</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>把 10 步拆成幾個小 agent 分工</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>用 workflow 固定前 6 步，只讓 agent 處理需要判斷的步驟</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>加更多 prompt 說「請務必按照順序執行」</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+D。光靠 prompt 來約束複雜流程的可靠度很低。A、B、C
+都是合理的方向：更強的模型、拆分任務、混合 workflow + agent。
+</details>
+<hr />
+<h1 id="context-engineering每個人都需要的技能">3.1 Context
+Engineering：每個人都需要的技能</h1>
+<h2 id="最重要的一件事">最重要的一件事</h2>
+<p>如果你從這整份指南只帶走一個概念，讓它是這個：</p>
+<p><strong>AI 的輸出品質，取決於你給它的 context 品質。</strong></p>
+<p>不是看你用哪個模型，不是看你 prompt
+寫得多花俏。是看你提供了什麼資訊、怎麼組織、以及省略了什麼。</p>
+<p>這就是 Context Engineering。</p>
+<h2 id="什麼是-context">什麼是 Context</h2>
+<p>Context 是 LLM 在做預測時能看到的全部資訊。它包括：</p>
+<ul>
+<li>你寫的 prompt / 指令</li>
+<li>你提供的參考資料</li>
+<li>對話歷史</li>
+<li>System prompt（系統層級的指令）</li>
+<li>甚至 AI 自己之前輸出的內容</li>
+</ul>
+<p>最後一點很容易被忽略：<strong>AI
+自己的輸出也會影響它接下來的輸出。</strong>
+如果它在第一輪給了一個錯誤的分析，這個錯誤會留在 context
+裡，影響後續的每一輪回答。錯誤會像雪球一樣越滾越大。</p>
+<h2 id="第一原則先全部丟進去再說">第一原則：先全部丟進去，再說</h2>
+<p>現在的 LLM
+整理跟過濾資訊的能力已經強到離譜。你不用先幫它篩選、整理、排版。</p>
+<p><strong>起手式就是：把所有你覺得可能相關的東西全部丟進去，加上你的問題，然後看它怎麼回應。</strong></p>
+<p>把整段 Slack thread 貼進去、把整份文件丟進去、把三個相關的 error log
+一起貼進去。不用擔心「太多會不會讓它搞混」。現在的模型從大量資訊中抓重點的能力，比大部分人都好。</p>
+<p>大部分時候，這樣就夠了。你會得到一個不錯的結果。</p>
+<p><strong>結果不如預期的時候，才需要開始優化 context。</strong>
+不要一開始就想太多「該給什麼、不該給什麼」，那是浪費時間。</p>
+<h2 id="注意agent-會先做再說">注意：Agent 會先做再說</h2>
+<p>這件事很重要，所以獨立拉出來講。</p>
+<p><strong>Agent 的預設行為是「行動」，不是「確認」。</strong>
+你給它一個模糊的指令，它不會停下來問你「你的意思是 A 還是
+B？」。它會直接挑一個方向衝下去，而且表現得很有自信。</p>
+<p>這在一開始特別危險。你跟 Agent 還沒建立默契、context
+還不完整的時候，它做的每一個假設都可能是錯的。但它不會告訴你它在猜，它會直接執行。</p>
+<h3 id="為什麼會這樣">為什麼會這樣</h3>
+<p>LLM 被訓練成「盡量產出有用的回應」。在它的世界觀裡，不回應 =
+沒有幫助。所以它寧可猜一個方向做下去，也不願意停下來說「我不確定」。</p>
+<p>這個傾向在 Agent 身上更放大了，因為 Agent 有工具可以用。LLM
+猜錯頂多回答不對，Agent 猜錯可能直接改了你的檔案、發了一個 API
+請求、或建了一筆錯誤的資料。</p>
+<h3 id="怎麼應對">怎麼應對</h3>
+<p><strong>一開始先讓 Agent 只規劃，不執行。</strong></p>
+<p>具體做法：在指令中加上「先告訴我你打算怎麼做，不要直接動手」。等你看過它的計畫、確認方向沒問題之後，再讓它開始執行。</p>
+<pre><code>❌ 「幫我處理這封客戶的 email」
+   → Agent 直接開始做，每一步都在猜你要什麼
+
+✅ 「看一下這封客戶的 email，告訴我你會怎麼處理，列出步驟就好，先不要執行」
+   → Agent 列出計畫，你確認後再說「好，照這個做」</code></pre>
+<p>隨著你跟 Agent 的合作越來越多、context 越來越完整（例如累積了
+instruction
+文件、過去的處理範例），它的判斷會越來越準。到那時候你可以放手讓它直接執行。</p>
+<p>但一開始，永遠是<strong>先看計畫，再放手</strong>。</p>
+<h2 id="當結果不好時三個方向排查">當結果不好時：三個方向排查</h2>
+<p>如果把所有東西丟進去之後，AI
+的輸出仍然不好，通常是以下三個原因之一：</p>
+<h3 id="關鍵資訊其實不在你給的內容裡">1.
+關鍵資訊其實不在你給的內容裡</h3>
+<p>你以為給的夠多了，但 AI 需要的某個關鍵 context
+其實不在裡面。例如你問「這個 bug 怎麼修」，貼了 error
+message，但沒給相關的程式碼或環境設定。</p>
+<p><strong>修法：</strong>
+想一下「如果我是一個完全不了解背景的人，看到這些資訊，我能回答這個問題嗎？」缺什麼就補什麼。</p>
+<h3 id="你的目標不夠明確-ambiguity">2. 你的目標不夠明確 (Ambiguity)</h3>
+<p>你跟 AI 說「幫我改善這個」。改善什麼？效能？可讀性？安全性？UI？AI
+不知道，但它不會問你，它會直接猜一個方向做下去。</p>
+<p><strong>修法：</strong> 明確你的目標和限制條件。「改善這個 API
+的回應速度，不要改變 response schema」比「改善這個」有用一百倍。</p>
+<h3 id="ai-的前一輪輸出把後面帶歪了">3. AI 的前一輪輸出把後面帶歪了</h3>
+<p>長對話中，如果 AI 在早期輸出了一個錯誤的分析或假設，這個錯誤會留在
+context 裡，像雪球一樣越滾越大。</p>
+<p><strong>修法：</strong>
+開一個新的對話，把目前的結論摘要帶過去，重新開始。乾淨的 context
+比拖著一堆歷史包袱有效得多。</p>
+<h2 id="寫-instruction-文件的原則">寫 Instruction 文件的原則</h2>
+<p>如果你有在用 AI 工具的 instruction 文件（如
+CLAUDE.md、.instructions.md 等），一樣遵守「先全部丟進去」的原則：</p>
+<ol type="1">
+<li><strong>先把你知道的都寫進去</strong>：現在的模型（尤其是 Opus 4.6
+等級的）消化大量指令的能力很強。不用怕寫太多，先把流程、規則、偏好全部丟進去</li>
+<li><strong>發現 AI 開始變笨再整理</strong>：當 instruction
+文件大到開始影響 AI
+的判斷力（回答品質下降、開始忽略某些規則），就是該整理的時候。把知識拆分成獨立的
+skill 或模組，讓 AI 在需要的時候才載入，而不是每次都讀全部</li>
+<li><strong>不要只說「不要」，要給替代方案</strong>：寫「不要用
+var」沒什麼用，寫「用 const，除非值會改變才用 let」才有用</li>
+</ol>
+<h2 id="實用技巧">實用技巧</h2>
+<h3 id="避免過早輸出結論">避免過早輸出結論</h3>
+<p>如果你需要分批提供資料給 AI，不要讓它每一批都產出分析。</p>
+<p>差的做法： &gt; 「這是合約的第一部分，請分析重點。」 &gt; → AI
+基於不完整的資訊產出分析，這個分析留在 context 裡，影響後續判斷</p>
+<p>好的做法： &gt;
+「這是合約的第一部分，請閱讀。理解後回覆『是』，如果需要更多資訊請說『否』。」
+&gt; → Context 裡不會累積錯誤的中間結論</p>
+<h3 id="發散與收斂要分清楚">發散與收斂要分清楚</h3>
+<p>需要創意的時候，不要給太多限制： &gt; 「我想做一個自動分類 email
+的功能，有哪些可能的做法？」</p>
+<p>確定方向之後，嚴格限制輸出： &gt; 「用 LLM classification。設計 API
+schema，格式用 JSON，只輸出 schema 不要解釋。」</p>
+<p>很多人覺得 AI
+輸出品質不好，常常是因為該發散的時候給了收斂的指令，或反過來。</p>
+<h3 id="定期清理-context">定期清理 Context</h3>
+<p>長對話的 context
+會越來越髒：錯誤的嘗試、過時的討論、被否決的方案，全部留在裡面。</p>
+<p>兩個做法： 1. <strong>總結後開新對話</strong>：請 AI
+把目前的結論壓縮成一段摘要，複製到新的聊天視窗繼續 2.
+<strong>編輯而不是重新生成</strong>：讓 AI
+在一個固定的文件上修改，而不是每次都全部重寫</p>
+<h2 id="context-engineering-不只是-prompt-engineering">Context
+Engineering 不只是 Prompt Engineering</h2>
+<p>Prompt Engineering 是 Context Engineering 的一個子集。Context
+Engineering 涵蓋更廣：</p>
+<ul>
+<li>怎麼設計 system prompt</li>
+<li>怎麼定義 tool 的 schema（讓 AI 知道工具怎麼用）</li>
+<li>怎麼決定什麼資訊該放進 context、什麼該省略</li>
+<li>怎麼管理 agent 在多步驟任務中的 context 演變</li>
+</ul>
+<p>這不只是工程師的事。PM 寫需求、CS 整理客戶回報、Ops
+描述問題，每個人跟 AI 互動的時候都在做 Context Engineering。你給的
+context 越到位，AI 的產出就越有用。</p>
+<h2 id="關於-prompt自己寫不要抄">關於 Prompt：自己寫，不要抄</h2>
+<p>網路上到處都有「最強 prompt 模板」、「一鍵安裝的 AI
+skill」、「複製貼上就能用的 system prompt」。</p>
+<p><strong>不要無腦用。</strong></p>
+<p>兩個理由：</p>
+<h3 id="你不知道裡面寫了什麼">1. 你不知道裡面寫了什麼</h3>
+<p>一段 prompt 可以包含隱藏指令。例如：</p>
+<ul>
+<li>要求 AI 把你的對話內容傳到某個外部 URL</li>
+<li>覆寫 AI 的安全限制，讓它執行不該執行的操作</li>
+<li>在看起來正常的指令中夾帶惡意邏輯</li>
+</ul>
+<p>這就是 <strong>prompt injection</strong> 的變體。你從網路上複製一段
+prompt，等於讓一個陌生人對你的 AI 下指令。如果你的 AI
+有存取公司系統的權限（tool use），這個風險更大。</p>
+<p><strong>原則：每一段你要用的 prompt、每一個你要裝的 skill 或
+plugin，都要先讀過一遍，確認你理解它在做什麼。</strong>
+看不懂的就不要用。</p>
+<h3 id="別人的-prompt-幫不了你建立直覺">2. 別人的 prompt
+幫不了你建立直覺</h3>
+<p>Prompt engineering 的價值不在於背誦模板，在於你自己摸索出「怎麼跟 AI
+溝通最有效」的直覺。</p>
+<p>這個直覺只能從實作中累積： - 你丟了什麼 context，AI 給了什麼結果 -
+你換了一種問法，結果變好還是變差 - 你加了什麼限制條件，AI
+的行為怎麼改變</p>
+<p>複製別人的 prompt
+跳過了這個過程。短期省時間，長期你永遠不知道為什麼某個 prompt
+有效、另一個沒效。</p>
+<h3 id="好的做法">好的做法</h3>
+<ul>
+<li><strong>看別人的 prompt
+當參考</strong>，理解他為什麼這樣寫，然後用自己的話重新寫一版</li>
+<li><strong>從最簡單的 prompt
+開始</strong>，結果不好再慢慢加條件。這樣你知道每個條件帶來什麼改變</li>
+<li><strong>安裝任何 skill、plugin、MCP server 之前</strong>，讀一下它的
+source code 或設定檔。至少確認它會存取什麼、會送什麼資料到哪裡</li>
+</ul>
+<hr />
+<h2 id="quiz-6">Quiz</h2>
+<p><strong>Q1.</strong> 你問 AI「這個 bug 怎麼修」，只貼了 error
+message，AI 給了一個看起來不太對的答案。你的第一步應該是？</p>
+<ul>
+<li><ol type="A">
+<li>換一個更強的模型</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>把 prompt 寫得更詳細</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>把相關的程式碼、環境設定一起丟進去</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>開一個新對話重問</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+C。第一原則：先全部丟進去。AI 可能只是缺少關鍵
+context。補上相關資訊再看結果，不用急著優化 prompt。
+</details>
+<p><strong>Q2.</strong> 你需要分三次把一份長合約貼給 AI
+分析。以下哪個做法比較好？</p>
+<ul>
+<li><ol type="A">
+<li>每貼一部分就請 AI 分析重點</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>前兩部分請 AI 先讀，最後一部分貼完再一起分析</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>三部分各自分析，最後請 AI 合併</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>都可以，沒差</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+B。避免過早輸出結論。如果 AI 在只看到 1/3
+的時候就做分析，這個不完整的結論會留在 context 裡，影響後續判斷。
+</details>
+<p><strong>Q3.</strong> 你跟 AI 討論了 30
+分鐘，發現它的回答開始偏離主題、品質下降。最可能的原因和解法？</p>
+<ul>
+<li><ol type="A">
+<li>模型累了，等一下再問 → 休息一下</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>對話太長，context 裡累積了太多雜訊 → 摘要後開新對話</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>模型變笨了 → 換一個模型</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>你的問題太難了 → 簡化問題</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+B。長對話中，之前的錯誤嘗試、過時的討論都會留在 context
+裡，影響後續輸出。最有效的做法是把結論摘要帶到新對話中重新開始。
+</details>
+<p><strong>Q4.</strong> 同事分享了一段「超好用的 system
+prompt」，說是從某個熱門 GitHub repo 複製的。你應該？</p>
+<ul>
+<li><ol type="A">
+<li>直接用，GitHub 上的東西應該沒問題</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>先讀過一遍，確認理解它在做什麼再決定要不要用</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>只要星星數夠多就可以信任</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>請 AI 幫你判斷這段 prompt 安不安全</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+B。任何外部來源的 prompt 都可能包含隱藏指令（prompt
+injection）。先讀過、理解它在做什麼，看不懂的就不要用。D 也不可靠，因為
+AI 本身就可能被 prompt injection 繞過。
+</details>
+<hr />
+<h1 id="平行化乘數效應">3.2 平行化：乘數效應</h1>
+<h2 id="ai-不只是讓你更快它讓你變成好幾個人">AI
+不只是讓你更快，它讓你變成好幾個人</h2>
+<p>大部分人對 AI
+的理解是「它幫我做事比較快」。快確實是好處，但快有極限。一件事再怎麼加速，能省的時間就是那件事本身的時間。</p>
+<p>改變遊戲規則的是
+<strong>parallelization（平行化）</strong>，不是速度。</p>
+<p>AI 可以在你做 A 的同時，幫你做
+B、C、D、E。你不是一個做事比較快的人，你是同時有好幾個人在工作的團隊。</p>
+<h2 id="一個真實的數據">一個真實的數據</h2>
+<p>筆者半年使用 AI coding agent 的統計：</p>
+<table>
+<thead>
+<tr>
+<th>指標</th>
+<th>數字</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>人類投入時間</td>
+<td>147 小時</td>
+</tr>
+<tr>
+<td>AI 執行時間</td>
+<td>2,708 小時</td>
+</tr>
+<tr>
+<td>其中平行執行的時間</td>
+<td>1,212 小時</td>
+</tr>
+</tbody>
+</table>
+<p>147 小時的人類指令，產出了 2,708 小時的 AI 工作量。其中 1,212
+小時是多個 AI session 同時在跑，不是一個接一個排隊。</p>
+<p>這不是「做事快了 18 倍」。這是「一個人指揮了 18
+個人份的工作量」。重點不在 AI 跑得多快，而在於他同時開了很多個 AI
+在平行工作。</p>
+<h2 id="你的大腦是單核心-cpu">你的大腦是單核心 CPU</h2>
+<p>人的大腦擅長深度思考，但一次只能專注一件事。你可以把它想成一顆很強但只有單核心的
+CPU。</p>
+<p>每次切換任務（context switch），你需要： - 把當前的思緒存起來 -
+載入新任務的背景 - 重新進入狀態</p>
+<p>這個切換成本很高。UC Irvine 的研究者 Gloria Mark
+的研究指出，被打斷後平均需要超過 20 分鐘才能恢復原本的專注度。(<a
+href="https://ics.uci.edu/~gmark/chi08-mark.pdf">Gloria Mark, “The Cost
+of Interrupted Work”</a>)</p>
+<h2 id="ai-是你的協同處理器">AI 是你的協同處理器</h2>
+<p>把 AI 想成 GPU：它接手那些可以平行處理的工作，你的
+CPU（大腦）繼續做需要深度思考的事。</p>
+<p>運作模式：</p>
+<ol type="1">
+<li><strong>卸載 (Offload)</strong>：把一個任務交給
+AI，例如「分析這份文件的現況」</li>
+<li><strong>不阻塞
+(Non-blocking)</strong>：你不等它做完，轉去做下一件事</li>
+<li><strong>中斷 (Interrupt)</strong>：AI
+做完後通知你，你切換過去檢查結果</li>
+<li><strong>整合</strong>：把 AI 的產出整合到你的工作中</li>
+</ol>
+<p>這個模式下，context switch 的成本仍然存在，但因為 AI
+在背景完成了大量工作，這個成本變得值得。</p>
+<h2 id="實際場景">實際場景</h2>
+<h3 id="工程師的一個早上">工程師的一個早上</h3>
+<p>傳統方式（循序）： 1. 寫 Feature X 的設計文件 → 2 小時 2. 做 Code
+Review → 1 小時 3. 回 Slack 訊息 → 30 分鐘</p>
+<p>平行方式： 1. 指派 AI 撰寫 Feature X 設計文件的初稿（AI 跑 3-10
+分鐘） 2. AI 跑的期間，開始 Code Review。請另一個 AI 先做初步
+review，總結修改內容和需要關注的地方 3. Code Review 等 AI 回來的空檔，請
+AI 整理 Slack thread 的進度和建議回覆方向 4. AI
+的設計文件初稿回來了，檢查、調整、定稿</p>
+<p>一樣三件事，但你的等待時間大幅減少。你變成在多個 AI agent
+之間切換的調度者（scheduler）。</p>
+<h3 id="pm-的一個下午">PM 的一個下午</h3>
+<ol type="1">
+<li>把三個相關的 Jira ticket 丟給 AI，請它整理出共同的需求脈絡</li>
+<li>同時，請另一個 AI 根據上週會議記錄產出 action items 追蹤表</li>
+<li>用等待的時間跟工程師對齊一個 spec 問題</li>
+<li>AI 產出回來了，review 兩份產出，合併成一份 sprint planning
+的材料</li>
+</ol>
+<h2 id="關鍵心態轉變">關鍵心態轉變</h2>
+<table>
+<thead>
+<tr>
+<th>舊思維</th>
+<th>新思維</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>我在等 AI 回覆</td>
+<td>AI 在背景跑，我去做下一件事</td>
+</tr>
+<tr>
+<td>AI 幫我做這件事</td>
+<td>AI 同時幫我做五件事</td>
+</tr>
+<tr>
+<td>我是執行者</td>
+<td>我是調度者和決策者</td>
+</tr>
+<tr>
+<td>生產力 = 做事的速度</td>
+<td>生產力 = 同時推進的事情數量</td>
+</tr>
+</tbody>
+</table>
+<p>Leverage 來自於你同時啟動了多少個 AI
+在幫你工作，不是來自單一任務跑多快。</p>
+<hr />
+<h2 id="quiz-7">Quiz</h2>
+<p><strong>Q1.</strong> 你請 AI 寫一份設計文件的初稿，預計要跑 5
+分鐘。這 5 分鐘你應該？</p>
+<ul>
+<li><ol type="A">
+<li>盯著螢幕等它寫完</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>去泡杯咖啡</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>同時啟動另一個 AI 做 code review</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>B 和 C 都可以，但 C 更好</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+D。泡咖啡沒問題，但平行啟動另一個任務才是把 AI
+當協同處理器用的正確方式。你是 scheduler，不是 observer。
+</details>
+<p><strong>Q2.</strong> 一位工程師半年內用 AI 產出了 2,708
+小時的工作量，但自己只投入 147 小時。這 18 倍的差距主要來自？</p>
+<ul>
+<li><ol type="A">
+<li>AI 做事速度是人類的 18 倍</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>他同時開了很多個 AI session 平行工作</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>AI 不用休息所以 24 小時都在跑</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>他把所有工作都丟給 AI 自己不做事</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+B。其中 1,212 小時是平行執行的。關鍵是同時啟動多個 AI
+工作，不是單一任務的速度差異。
+</details>
+<hr />
+<h1 id="ai-在企業中的應用">3.3 AI 在企業中的應用</h1>
+<h2 id="從一次呼叫到完整流程">從一次呼叫到完整流程</h2>
+<p>AI 的應用可以從很簡單開始，逐步長出複雜度：</p>
+<h3 id="單次-llm-呼叫">單次 LLM 呼叫</h3>
+<p>把文件丟給 LLM，轉換成結構化資料。例如用 OCR 把 PDF 轉成純文字，再用
+LLM 提取關鍵欄位輸出 JSON。</p>
+<p>不需要循環、不需要 memory、不需要多步驟。一次呼叫就搞定。</p>
+<h3 id="agent-執行固定流程">Agent 執行固定流程</h3>
+<p>收到一封 email，你在指令裡寫清楚：「先分析附件取得編號 → 用編號查系統
+→ 找到負責人 → 建立待辦事項」。Agent 照著這個流程走。</p>
+<p>指令寫得越清楚，Agent 的行為就越像 workflow。這是最快的起步方式：用
+context 定義流程，改指令就改行為。</p>
+<h3 id="agent-自主決策">Agent 自主決策</h3>
+<p>同樣的場景，但你只說「處理這封 email」。Agent
+自己決定要做什麼、按什麼順序、要不要查系統。彈性高，但行為不一定每次一致。</p>
+<h3 id="穩定後抽出-hard-coded-workflow">穩定後抽出 hard-coded
+workflow</h3>
+<p>流程跑了一陣子都沒問題了，你發現其中幾個步驟根本不需要 LLM
+推理（例如「把 JSON 寫進資料庫」）。這時可以把這些步驟抽出來用程式碼或
+workflow 工具（如 n8n）跑，省下不必要的 token 成本。</p>
+<pre><code>單次 LLM 呼叫 → Agent + 嚴格指令 → Agent 自主決策
+                                         ↓
+                              流程穩定後，非推理步驟抽到 hard-coded workflow 省成本</code></pre>
+<p>起步不用想太多，先讓 Agent 跑起來。成本優化是後面的事。</p>
+<h2 id="用-context-操縱行為而非修改程式碼">用 Context
+操縱行為，而非修改程式碼</h2>
+<p>一個有趣的做法：當你的 AI
+產品需要針對不同客戶或場景有不同行為時，不一定要寫不同的程式碼。</p>
+<p>你可以透過 context 注入來改變 Agent 的行為：</p>
+<ul>
+<li>在 System Prompt 裡定義通用的 SOP</li>
+<li>針對不同客戶或場景，在 runtime 注入客製化指令</li>
+<li>客戶 A 偏好某種處理方式，客戶 B 有自己的命名規則，這些都可以用
+context 承載</li>
+</ul>
+<p>也就是說，你的 AI 產品不用改程式碼，光靠調整「context
+設定」就能適應不同情境。這就是 Context Engineering
+在產品層面的應用。</p>
+<h2 id="domain-twin複製人的經驗">Domain Twin：複製人的經驗</h2>
+<p>Digital Twin 複製的是設備，用虛擬模型模擬機台行為、預測故障。</p>
+<p><strong>Domain Twin</strong>
+是把同樣的概念用在人身上：把資深員工的經驗、判斷邏輯、排查問題的
+know-how，透過 AI 數位化，變成可以傳承、可以跨組織複製的東西。</p>
+<p>這不是科幻。上一節講的「透過 context 注入客製化指令」就是 Domain Twin
+的初步實現。SOP 是流程知識，客製化指令是領域知識。兩者都透過 context
+傳遞給 AI，而不是寫在程式碼裡。</p>
+<h2 id="從-context-engineering-的角度看未來">從 Context Engineering
+的角度看未來</h2>
+<p>AI 產品的進化方向，越來越不是「寫更多程式碼」，而是「設計更好的
+context」：</p>
+<ul>
+<li>怎麼把人類的判斷邏輯轉譯成 AI 能理解的指令</li>
+<li>怎麼讓不同角色的知識被 AI 系統所用</li>
+<li>怎麼在不改程式碼的前提下，透過 context 調整 AI 的行為</li>
+</ul>
+<p>所以 Context Engineering
+不只是工程師的事。每個人對自己領域的專業知識，都是 AI 系統最有價值的
+context 來源。</p>
+<hr />
+<h2 id="quiz-8">Quiz</h2>
+<p><strong>Q1.</strong> 你要做一個功能：把 PDF 發票轉成結構化的 JSON
+資料。應該用什麼架構？</p>
+<ul>
+<li><ol type="A">
+<li>Agent（多步驟自動化）</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>單次 LLM 呼叫</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>Workflow + Agent 混合</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>不需要 AI，用傳統程式就好</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+B。這是一個「輸入 → 轉換 →
+輸出」的任務，一次呼叫就能解決。不需要循環、不需要
+memory、不需要多步驟。用 Agent 是 overkill。
+</details>
+<p><strong>Q2.</strong> 你的 AI
+產品要服務不同客戶，每個客戶有不同的處理邏輯。最符合 Context Engineering
+精神的做法是？</p>
+<ul>
+<li><ol type="A">
+<li>每個客戶寫一套獨立的程式碼</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>用 if-else 判斷客戶 ID 來切換邏輯</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>在 runtime 把客戶專屬的指令注入到 context 中</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>訓練一個客戶專屬的模型</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+C。透過 context 注入客製化指令，不用改程式碼就能適應不同客戶。這是
+Context Engineering 在產品層面的應用。
+</details>
+<hr />
+<h1 id="ai-在你的角色中">3.4 AI 在你的角色中</h1>
+<h2 id="給工程師">給工程師</h2>
+<h3 id="與-ai-協作寫程式">與 AI 協作寫程式</h3>
+<p>Linus Torvalds 在<a
+href="https://www.youtube.com/watch?v=OvuEYtkOH88&amp;t=1230s">一場訪談</a>中說過：「We
+don’t write machine code anymore. We don’t even write Assembler. And now
+we’re moving on from C to Rust. So I don’t see this as something as
+revolutionary as all the news talk is every day about AI.」</p>
+<p>AI 寫程式是程式語言抽象化的自然延伸。重點不是 AI 能不能寫
+code，而是你怎麼跟它協作。</p>
+<p><strong>四個原則：</strong></p>
+<ol type="1">
+<li><strong>以終為始</strong>：動手前，你要清楚最終程式碼應該做什麼。AI
+是執行者，你是設計者</li>
+<li><strong>Plan 然後 Act</strong>：讓 AI
+先規劃、你確認方向，再讓它執行。不要直接讓它開始寫</li>
+<li><strong>Review test cases，不是 review 每一行 code</strong>：AI
+生成的實作細節可以依賴自動化測試驗證。你的精力放在測試案例的完整性和正確性。（<a
+href="https://metr.org/notes/2026-03-10-many-swe-bench-passing-prs-would-not-be-merged-into-main/">研究顯示</a>，AI
+agent 通過測試的 PR 有大約一半不會被 repo maintainer
+接受合併，測試通過不等於 code 沒問題）</li>
+<li><strong>平行工作</strong>：同時開多個 AI session
+處理不同任務（feature 開發、code
+review、文件更新），你在它們之間切換做最終決策</li>
+</ol>
+<p><strong>注意事項：</strong></p>
+<ul>
+<li>AI 跑的時候不要乾等，去做下一件事</li>
+<li>不要在 AI 正在編輯的檔案上同時修改</li>
+<li>AI 產出有遺漏的話，回到對話框告訴它漏了什麼，不要自己改</li>
+</ul>
+<h3 id="工具與預算">工具與預算</h3>
+<ul>
+<li><strong>選模型</strong>：吃到飽方案（如 Claude
+Max）直接用最強的（Opus
+4.6），它通常能用更少的來回完成任務。按用量計費的話，日常用便宜的（GPT-5.4、Gemini
+3.1 Flash），複雜推理才用貴的（GPT-5.4-Pro、Gemini 3.1 Pro）</li>
+<li><strong>動手試</strong>：免費資源很多（Ollama Cloud、GitHub
+Models、各家免費額度）。就算想花錢，OpenAI 平台加值 $10
+美金就能跑很多任務，比你預期的多。不要等人幫你準備好，自己動手</li>
+<li><strong>養成直覺</strong>：一次簡單問答大約花多少 token、一個多步驟
+Agent
+任務大約花多少。有這個感覺之後，你才知道什麼時候該用大模型、什麼時候小的就夠</li>
+</ul>
+<hr />
+<h2 id="給-pm-和非技術角色">給 PM 和非技術角色</h2>
+<h3 id="用-ai-理解程式碼">用 AI 理解程式碼</h3>
+<p>你不需要看懂程式碼，你要理解的是背後的邏輯。AI 可以幫你翻譯。</p>
+<p>關鍵是在 prompt 裡講清楚兩件事：<strong>你的背景</strong>（讓 AI
+知道該用什麼層次的語言）和<strong>你要什麼形式的解釋</strong>（步驟、業務規則、實際例子）。</p>
+<p>範例 prompt：</p>
+<blockquote>
+<p>我沒有技術背景。請用一般人聽得懂的語言，解釋這段程式碼： -
+它在做什麼？使用者會看到什麼？ - 資料怎麼流動的？（用步驟說明） -
+有什麼業務規則？（用「如果…那麼…」說明） - 給我一個實際例子</p>
+<p>不要提到變數名稱或語法。</p>
+<p>【我的問題】{你的問題}</p>
+</blockquote>
+<p>這個 prompt 有效是因為：它告訴 AI
+你的程度（不用省略基礎說明），限定了輸出格式（步驟、業務規則、例子），還排除了你不需要的東西（變數名、語法）。你可以根據自己的需求調整。</p>
+<h3 id="對齊-spec">對齊 Spec</h3>
+<p>把跟 AI 的對話當成跟工程師對焦之前的演練： - 貼上需求描述，請 AI
+覆述它的理解，看是否跟你想的一致 - 請 AI 列出可能的 edge cases 或遺漏 -
+把 AI 的分析帶到跟工程師的會議中，省去從頭解釋的時間</p>
+<hr />
+<h2 id="給所有人">給所有人</h2>
+<p>AI 最容易上手的日常應用有一個共通
+pattern：<strong>你有一堆散亂的資訊，需要變成結構化的、可行動的東西。</strong>
+這剛好是 LLM 最強的能力之一。</p>
+<p>幾個場景：</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>你有的</th>
+<th>你要的</th>
+<th>怎麼做</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>會議錄音或逐字稿（可能有錯字）</td>
+<td>結構化會議紀要：重點、決議、action items</td>
+<td>整段丟給 AI，指定輸出格式（Overview / Notes / Action Items by
+owner）</td>
+</tr>
+<tr>
+<td>一串很長的 Slack thread 或 email chain</td>
+<td>搞清楚現在討論到哪了、各方立場是什麼</td>
+<td>整段貼進去，請 AI 整理各方觀點、列出共識和爭議點</td>
+</tr>
+<tr>
+<td>接手別人的工作，一堆歷史對話</td>
+<td>快速掌握脈絡和下一步</td>
+<td>把對話全部丟進去，請 AI 摘要現狀和建議的 next steps</td>
+</tr>
+<tr>
+<td>一份很長的文件</td>
+<td>針對你關心的角度做摘要</td>
+<td>整份丟進去，明確說你關心什麼（例如「我只關心對我們團隊有影響的部分」）</td>
+</tr>
+</tbody>
+</table>
+<p>重點不是背這些場景，是認出這個 pattern：<strong>散亂資訊 →
+結構化輸出</strong>。碰到類似的情境就可以試。</p>
+<hr />
+<h2 id="quiz-9">Quiz</h2>
+<p><strong>Q1.</strong> 你是工程師，AI
+幫你寫了一段新功能的程式碼。Review 的時候你應該把重點放在？</p>
+<ul>
+<li><ol type="A">
+<li>逐行檢查 AI 寫的每一行 code</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>檢查測試案例的完整性和正確性</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>確認 AI 用的變數名稱夠好</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>看 code 的排版有沒有問題</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+B。實作細節可以靠自動化測試驗證。你的精力放在測試案例夠不夠完整、有沒有涵蓋
+edge case，比逐行看 code 更有效。
+</details>
+<p><strong>Q2.</strong> 你是
+PM，想了解系統中某個功能的業務規則。以下哪個做法最有效？</p>
+<ul>
+<li><ol type="A">
+<li>自己讀程式碼</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>直接問工程師</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>用 AI 解釋相關程式碼，用「如果…那麼…」的方式說明業務規則</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>看文件（如果有的話）</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+C。AI 可以把程式碼翻譯成非技術人員能理解的語言。你可以用 AI
+的分析當基礎，再跟工程師確認細節，省去從頭解釋的時間。
+</details>
+<hr />
+<h1 id="最後幾件事">最後幾件事</h1>
+<h2 id="調整你的期待">調整你的期待</h2>
+<p>AI 能快速完成一件事的 70% 左右，但剩下的 30%
+需要人類的判斷力才能搞定。這個比例會隨著模型進步而改變，但「人類負責最後那一段」這件事短期內不會消失。</p>
+<p>換個方式想：用 AI 之前，你對一件事的結果有接近 100%
+的掌控，但產出速度有限。用 AI 之後，你對結果的掌控降低了（因為 AI
+的輸出是機率性的），但你能同時推進的事情量大幅增加。</p>
+<p>這是一個取捨：<strong>用確定性換槓桿。</strong></p>
+<p>接受這個取捨之後，你的工作方式會根本性地改變。你不再是那個從頭到尾自己做完每件事的人，而是那個拆解問題、分配給
+AI、檢查產出、做最終決策的人。</p>
+<blockquote>
+<p>未來比的不是誰寫 code 寫得快，而是誰能把任務拆解好、分配給 AI
+去做。</p>
+</blockquote>
+<h2 id="這份指南的目標">這份指南的目標</h2>
+<p>不是讓你變成 AI 專家，是讓你有足夠的判斷力去決定：這個問題該不該用
+AI？該怎麼用？用到什麼程度？</p>
+<p>這個判斷力不會因為模型更新而過期。</p>
+<blockquote>
+<p>延伸閱讀：<a
+href="https://resources.anthropic.com/hubfs/2026%20Agentic%20Coding%20Trends%20Report.pdf">Anthropic
+2026 Agentic Coding Trends Report</a></p>
+</blockquote>
+<hr />
+<h1 id="術語表">術語表</h1>
+<p>快速查找指南中出現的關鍵術語。按出現順序排列。</p>
+<h2 id="llm-基礎">LLM 基礎</h2>
+<table>
+<colgroup>
+<col style="width: 40%" />
+<col style="width: 60%" />
+</colgroup>
+<thead>
+<tr>
+<th>術語</th>
+<th>白話解釋</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>LLM</strong> (Large Language Model)</td>
+<td>大型語言模型。用大量文字資料訓練出來的
+AI，核心能力是預測下一個字</td>
+</tr>
+<tr>
+<td><strong>Token</strong></td>
+<td>LLM 處理文字的最小單位。可以是一個字、一個詞、或詞的一部分</td>
+</tr>
+<tr>
+<td><strong>Next-token prediction</strong></td>
+<td>LLM 的核心機制：根據前面的文字，預測下一個最可能出現的 token</td>
+</tr>
+<tr>
+<td><strong>Attention</strong></td>
+<td>LLM 在預測時，動態決定前文中「哪些 token
+比較重要」的機制。不是平均地看，而是根據當前需求分配權重</td>
+</tr>
+<tr>
+<td><strong>Emergence</strong></td>
+<td>大規模訓練後自然冒出來的能力（如推理、翻譯），不是被刻意寫進去的</td>
+</tr>
+<tr>
+<td><strong>Hallucination</strong></td>
+<td>幻覺。LLM
+生成的內容看起來合理但事實上錯誤。根源是它在預測「最可能的字」，不是在判斷「正確的答案」</td>
+</tr>
+<tr>
+<td><strong>Context window</strong></td>
+<td>LLM 一次能「看到」的文字量上限。超出範圍的資訊它就看不到</td>
+</tr>
+<tr>
+<td><strong>Noise</strong></td>
+<td>Context 中與任務無關的資訊。會消耗 attention，但通常不致命</td>
+</tr>
+<tr>
+<td><strong>Ambiguity</strong></td>
+<td>Context 中多個資訊長得像、功能重疊，讓 LLM
+抓不準重點。這才是出錯的主因</td>
+</tr>
+</tbody>
+</table>
+<h2 id="模型訓練與客製化">模型訓練與客製化</h2>
+<table>
+<colgroup>
+<col style="width: 40%" />
+<col style="width: 60%" />
+</colgroup>
+<thead>
+<tr>
+<th>術語</th>
+<th>白話解釋</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Transformer</strong></td>
+<td>2017 年提出的模型架構，讓 Attention
+機制可以大規模平行運算。現在幾乎所有 LLM 都基於這個架構</td>
+</tr>
+<tr>
+<td><strong>Reasoning Training</strong></td>
+<td>訓練模型在回答前花更多時間「思考」（thinking
+tokens），提高複雜問題的準確度</td>
+</tr>
+<tr>
+<td><strong>Synthetic Data</strong></td>
+<td>合成資料。用現有的強模型生成高品質的訓練資料，補上真實資料不夠的地方</td>
+</tr>
+<tr>
+<td><strong>RLHF</strong> (Reinforcement Learning from Human
+Feedback)</td>
+<td>用人類的偏好回饋來訓練模型，讓它學會「什麼是好的回答」</td>
+</tr>
+<tr>
+<td><strong>Fine-tuning</strong></td>
+<td>用特定資料對模型做進一步訓練，直接改變模型的參數。成本高、有風險（可能破壞安全對齊）。通常先試
+RAG + Context Engineering</td>
+</tr>
+<tr>
+<td><strong>RAG</strong> (Retrieval-Augmented Generation)</td>
+<td>讓 LLM 在回答前先查外部知識庫，用查到的真實資料來生成答案。防
+hallucination 的主要手段</td>
+</tr>
+<tr>
+<td><strong>Prompt Engineering</strong></td>
+<td>設計好的指令（prompt）來引導 LLM 產出你要的結果</td>
+</tr>
+<tr>
+<td><strong>Context Engineering</strong></td>
+<td>比 Prompt Engineering 更廣：設計整個
+context（指令、參考資料、工具定義、對話歷史）來控制 AI 的行為</td>
+</tr>
+</tbody>
+</table>
+<h2 id="agent">Agent</h2>
+<table>
+<colgroup>
+<col style="width: 40%" />
+<col style="width: 60%" />
+</colgroup>
+<thead>
+<tr>
+<th>術語</th>
+<th>白話解釋</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Agent</strong></td>
+<td>LLM + Tools + Loop。一個能理解目標、使用工具、根據結果調整策略的 AI
+系統</td>
+</tr>
+<tr>
+<td><strong>Tool Use</strong></td>
+<td>LLM 輸出結構化指令（通常是
+JSON）來呼叫外部系統（API、資料庫、程式碼執行等）</td>
+</tr>
+<tr>
+<td><strong>Memory</strong></td>
+<td>Agent 的外部記憶機制。把重要資訊寫到檔案或資料庫，下次對話時載入
+context。像便利貼，不是大腦</td>
+</tr>
+<tr>
+<td><strong>Plan-Act-Reflect Loop</strong></td>
+<td>Agent 的核心循環：規劃 → 執行 → 觀察結果 → 反思調整 → 再執行。讓
+Agent 可以自我修正</td>
+</tr>
+<tr>
+<td><strong>Workflow</strong></td>
+<td>人類預先定義好的固定流程（if-else 分支）。可預測、可控、便宜</td>
+</tr>
+</tbody>
+</table>
+<h2 id="安全">安全</h2>
+<table>
+<colgroup>
+<col style="width: 40%" />
+<col style="width: 60%" />
+</colgroup>
+<thead>
+<tr>
+<th>術語</th>
+<th>白話解釋</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Prompt Injection</strong></td>
+<td>惡意使用者透過精心設計的輸入，讓 AI
+執行非預期的操作（如繞過安全限制、洩漏資料）</td>
+</tr>
+<tr>
+<td><strong>Jailbreak</strong></td>
+<td>Prompt injection 的一種，專門用來繞過 AI
+的安全護欄，讓它產出原本被禁止的內容</td>
+</tr>
+<tr>
+<td><strong>Guardrails</strong></td>
+<td>在 input 進入主 Agent 前，用一個小模型先過濾惡意意圖的機制</td>
+</tr>
+<tr>
+<td><strong>Blast Radius</strong></td>
+<td>影響範圍。當 AI 出錯時，能造成多大的損害。設計原則：限制 AI
+的權限到最小必要範圍</td>
+</tr>
+<tr>
+<td><strong>HITL</strong> (Human-in-the-Loop)</td>
+<td>在關鍵決策點設計人類審核。AI
+做繁重工作，人類做最終確認。是刻意的架構設計</td>
+</tr>
+</tbody>
+</table>
+<h2 id="應用">應用</h2>
+<table>
+<colgroup>
+<col style="width: 40%" />
+<col style="width: 60%" />
+</colgroup>
+<thead>
+<tr>
+<th>術語</th>
+<th>白話解釋</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Parallelization</strong></td>
+<td>平行化。同時啟動多個 AI
+任務，你在它們之間切換做決策。生產力來自同時推進的數量，不是單一任務的速度</td>
+</tr>
+<tr>
+<td><strong>Domain Twin</strong></td>
+<td>把資深員工的經驗和判斷邏輯，透過 context 傳遞給 AI，讓 AI
+能複製這些知識。是 Digital Twin 用在人身上的版本</td>
+</tr>
+<tr>
+<td><strong>Vibe Coding</strong></td>
+<td>透過自然語言描述需求，讓 AI 協助生成和修改程式碼的工作方式</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h1 id="綜合測驗">綜合測驗</h1>
+<p>這份測驗涵蓋所有章節。情境題為主，測的是判斷力，不是記憶力。</p>
+<hr />
+<p><strong>Q1.</strong> 你的同事說：「AI
+就是一個很聰明的搜尋引擎。」這個說法哪裡有問題？</p>
+<ul>
+<li><ol type="A">
+<li>AI 確實是搜尋引擎，沒有問題</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>搜尋引擎查的是既有資料，LLM 是根據 pattern 生成新的內容</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>AI 比搜尋引擎笨</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>搜尋引擎不會犯錯，AI 會</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+B。搜尋引擎是「查找」既有的網頁，LLM 是「生成」全新的內容。LLM
+根據訓練資料中的統計 pattern 預測下一個 token，產出的是全新的組合。D
+不對是因為搜尋引擎也會回傳錯誤或過時的結果。
+</details>
+<hr />
+<p><strong>Q2.</strong> 你請 AI 幫你算「128 × 947」，它回答
+121,116（錯誤，正確是 121,216）。最根本的原因是？</p>
+<ul>
+<li><ol type="A">
+<li>AI 數學不好，要多鼓勵它</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>LLM 是在預測「最可能出現的數字序列」，不是在做數學運算</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>LLM 的 context window 不夠</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>你的 prompt 不夠好，應該說「請精確計算」</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+B。LLM 不會「算」。它看到「128 × 947
+=」之後，預測最可能接著出現的數字序列。罕見的數字組合在訓練資料中出現較少，所以容易猜錯。D
+沒用，因為問題出在機制層面，不是指令層面。需要精確計算時，應該讓 AI 用
+tool（如 code execution）來算。
+</details>
+<hr />
+<p><strong>Q3.</strong> 你想自動化一個流程：收到 email → 分析附件 →
+查系統 → 建立待辦事項。最好的起步方式是？</p>
+<ul>
+<li><ol type="A">
+<li>先用 n8n 之類的工具把整個流程寫死</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>用 Agent 配上清楚的步驟指令，讓它照著跑</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>花幾週規劃完整的系統架構再開始</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>等 AI 技術更成熟再做</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+B。起步最快的方式是用 Agent +
+清楚指令來跑流程。改指令就改行為，迭代很快。A（hard-coded
+workflow）適合流程已經穩定之後再做，用來省 token
+成本。一開始就寫死會讓你很難調整。
+</details>
+<hr />
+<p><strong>Q4.</strong> 你的 AI agent
+偶爾會在多步驟任務中「跳步」，編造不存在的資料。以下哪些做法可能有效？（複選）</p>
+<ul>
+<li><ol type="A">
+<li>換一個更大的模型</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>在 prompt 裡寫「請不要編造資料」</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>把多步驟拆成 workflow，每一步等真實結果回來再進行下一步</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>加入 tool use，讓 agent 去系統查而不是用猜的</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+A、C、D。B 的效果非常有限，因為 hallucination 是 LLM
+的機制問題（它在預測最可能的 token），不是態度問題，光用指令管不住。A
+有效是因為更大的模型有更好的指令遵循能力，C 用 workflow
+固定順序避免跳步，D 用真實資料取代猜測。
+</details>
+<hr />
+<p><strong>Q5.</strong> 你把一份 50 頁的技術文件丟給 AI 問了一個問題，AI
+的回答不太對。你應該先排查什麼？</p>
+<ul>
+<li><ol type="A">
+<li>模型不夠好，該換一個</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>50 頁太多了，要先自己整理成摘要再餵給 AI</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>問題是否夠明確，以及答案需要的關鍵資訊是否真的在這 50 頁裡</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>AI 今天狀態不好</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+C。第一原則是先全部丟進去（已經做了），第二步排查兩件事：你的問題是否有
+ambiguity（AI 可能猜錯你要問什麼）？答案需要的關鍵 context
+是否真的在裡面（也許少了一份關鍵文件）？B 違反「先全部丟進去」的原則，A
+在碰運氣。D 的話… LLM
+沒有「狀態」，它每次推理都是獨立的，不存在今天心情好不好的問題。
+</details>
+<hr />
+<p><strong>Q6.</strong> Human-in-the-Loop (HITL) 最正確的理解是？</p>
+<ul>
+<li><ol type="A">
+<li>AI 不夠好的時候的臨時方案，以後就不需要了</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>讓 AI 做繁重工作，人類在關鍵決策點做最終確認</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>每一步都要人類確認，確保不出錯</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>只有在 AI 出錯的時候才需要人類介入</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+B。HITL 是刻意的架構設計，不是因為 AI 不行才加的（A 錯）。C
+如果每一步都要人確認，那跟不用 AI 沒兩樣。D 的問題是你不知道 AI
+什麼時候會出錯，所以要在「關鍵決策點」設審核，而不是等出錯才介入。
+</details>
+<hr />
+<p><strong>Q7.</strong> 情境：你是
+PM，需要在明天的會議前準備三份材料：需求整理、競品分析、上週 action
+items 追蹤。你有 2 小時。最有效率的做法是？</p>
+<ul>
+<li><ol type="A">
+<li>按重要性排序，一份做完再做下一份</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>三份同時丟給 AI 做，自己去喝咖啡等 2 小時</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>同時啟動三個 AI 任務，趁 AI 跑的時候回覆幾封 email，AI 完成後 review
+和調整</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>把最花時間的那份交給 AI，自己做另外兩份</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+C。平行化的核心是：你跟 AI 同時在動。B 的問題是你閒了 2
+小時，浪費了人類的時間。D 比 A 好但只平行了一份。C 讓三個 AI
+同時跑，你在空檔處理其他事，回來 review 產出，是最大化 throughput
+的做法。
+</details>
+<hr />
+<p><strong>Q8.</strong> 以下哪句話最能描述 Context Engineering
+的核心？</p>
+<ul>
+<li><ol type="A">
+<li>寫出完美的 prompt 是最重要的技能</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>AI 的產出品質取決於你給它的資訊品質</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>要盡量減少給 AI 的資訊量，避免混淆</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>Context Engineering 是工程師專屬的技能</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+B。Context Engineering 的核心：你給什麼資訊、怎麼組織，決定了輸出品質。A
+錯在 prompt 只是 context 的一部分，不是全部。C
+跟指南的「先全部丟進去」原則相反。D 錯在每個角色跟 AI 互動時都在做
+Context Engineering。
+</details>
+<hr />
+<p><strong>Q9.</strong>
+情境：你把一份產品規格書、三份不相關的行銷企劃、和你的問題一起丟給
+AI。AI
+的回答混入了行銷企劃的內容，偏離了你問的技術問題。這是什麼現象？</p>
+<ul>
+<li><ol type="A">
+<li>Hallucination，AI 在編造內容</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>Noise，無關資訊稀釋了 AI 的注意力，讓它抓錯重點</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>Ambiguity，你的問題不夠明確</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>Context window 不夠大</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+B。AI 的回答是基於你給的資訊生成的，行銷企劃的內容確實在 context
+裡（所以不是 hallucination）。問題是這些無關資訊消耗了 attention
+權重，讓 AI
+把重點放錯地方。修法：這是少數該先過濾再丟的情況，把不相關的文件移除再問一次。
+</details>
+<hr />
+<p><strong>Q10.</strong> 你從網路上找到一個很受歡迎的「AI 助理 system
+prompt」，有 500 個星星。你想裝到公司的 AI
+工具上用。以下哪個做法最正確？</p>
+<ul>
+<li><ol type="A">
+<li>500 個星星代表很多人驗證過了，直接用</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>先完整讀過，理解每一段指令在做什麼，確認沒有可疑的內容再決定</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>請 AI 幫你審查這段 prompt 安不安全</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>只要不是從不明來源下載的就沒問題</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+B。星星數不代表安全（A 錯），很少人真的讀過 repo 裡的每一行。C
+不可靠，因為 AI 本身就可能被 prompt injection 繞過。D
+的「明確來源」也不保證安全。唯一可靠的方式是自己讀過、理解、確認沒有隱藏指令（如要求
+AI 傳送資料到外部 URL、覆寫安全限制等）。
+</details>
+<hr />
+<p><strong>Q11.</strong> 情境：你請 AI
+翻譯一段英文技術文件，結果品質很好。接著你請它幫你判斷「這份合約對我們公司有利還是不利」，結果很離譜。為什麼同一個
+AI 表現差這麼多？</p>
+<ul>
+<li><ol type="A">
+<li>AI 翻譯用了不同的模型</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>翻譯在訓練資料中有大量 pattern 可用，商業判斷需要 reasoning 和
+domain knowledge，pattern 不夠</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>合約太長，超過 context window</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>AI 不擅長處理中文</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+B。翻譯是 LLM
+最強的領域之一（訓練資料中平行語料庫極多）。但「判斷合約有利還是不利」需要理解商業脈絡、法律風險、公司狀況，這些不是
+pattern matching 能搞定的。LLM 的能力建立在 pattern 上，pattern
+不夠的地方就會出包。
+</details>
+<hr />
+<p><strong>Q12.</strong> 你的 AI agent 有存取公司 CRM
+系統的權限。以下哪個風險最嚴重？</p>
+<ul>
+<li><ol type="A">
+<li>Agent 回答問題的速度太慢</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>Agent 有時候回答不夠精確</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>惡意使用者透過 prompt injection 讓 Agent 匯出客戶資料</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>Agent 的 API 費用太高</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+C。當 Agent 有 tool use
+權限時，安全風險從「回答錯誤」升級為「做錯事」。Prompt injection 可能讓
+Agent 執行非預期的操作（匯出資料、修改記錄等）。A、B、D
+是效能和成本問題，C 是安全問題，嚴重程度不在同一個級別。
+</details>
+<hr />
+<p><strong>Q13.</strong> LLM 回答你「台積電 2025 年 Q4 營收是 8,682
+億」。你應該？</p>
+<ul>
+<li><ol type="A">
+<li>直接用，LLM 很少在數字上出錯</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>不確定，但數字看起來合理就先用</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>去查原始來源驗證，因為 LLM 無法自我驗證事實</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>問 AI「你確定嗎？」，如果它說確定就可以信</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+C。LLM 無法驗證自己輸出的事實是否正確（限制 4）。它可能是對的，也可能是
+hallucination。D 沒用，因為問它「確不確定」，它只是再做一次 next-token
+prediction，不是真的去查證。涉及具體數字和事實，一定要查原始來源。
+</details>
+<hr />
+<p><strong>Q14.</strong> 以下哪個最接近 Agent 中 Memory 的運作方式？</p>
+<ul>
+<li><ol type="A">
+<li>人腦記住昨天發生的事</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>你在便利貼上寫下明天要做的事，貼在螢幕上</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>電腦的 RAM，關機就清空</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>搜尋引擎的快取</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+B。Agent 的 memory
+是外部儲存機制：把重要事情寫下來（存到檔案或資料庫），下次需要時再讀取載入
+context。LLM 本身不會記住（像 C 的 RAM），memory
+是額外貼上去的「便利貼」。A 錯在人腦記憶是原生能力，LLM 的 memory 不是。
+</details>
+<hr />
+<p><strong>Q15.</strong> 你跟 AI 說「幫我寫一封信給客戶」。AI
+寫了一封很正式的英文商務信。但你其實想要的是一封輕鬆的中文 LINE
+訊息。問題出在哪？</p>
+<ul>
+<li><ol type="A">
+<li>AI 不懂中文</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>AI 覺得正式比較有禮貌</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>你的指令有 ambiguity，AI 猜了一個最常見的
+pattern（正式英文商務信）</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>AI 的模型太舊</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+C。「寫一封信給客戶」在訓練資料中最常見的 pattern 就是正式英文商務信。AI
+不知道你要中文、要輕鬆語氣、要 LINE 格式，因為你沒說。這是 ambiguity
+問題。修法：明確指定語言、語氣、格式、長度。
+</details>
+<hr />
+<p><strong>Q16.</strong> 情境：你用 AI
+寫了一段程式碼，跑測試全部通過。可以放心上線嗎？</p>
+<ul>
+<li><ol type="A">
+<li>測試全過就可以上線</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>要看測試案例本身是否夠完整，AI 寫的測試可能只涵蓋 happy path</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>AI 寫的 code 不需要測試</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>要逐行 review 完每一行 code 才能上線</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+B。測試通過只代表「這些測試案例都過了」，不代表「這段 code 沒問題」。AI
+生成的測試可能漏掉 edge case、錯誤處理、邊界條件。Review
+的重點應該放在測試案例的完整性，而不是逐行看實作（D
+太耗時且不是最有效的做法）。
+</details>
+<hr />
+<p><strong>Q17.</strong> 收到客戶 email 後，Agent 需要：(1)
+分析附件取得訂單編號 → (2) 用編號查系統 → (3) 找到負責人 → (4)
+建立待辦事項。一個較小的模型直接同時執行了四步，編造了不存在的編號。換了更大的模型後問題消失了。為什麼？</p>
+<ul>
+<li><ol type="A">
+<li>大模型比較有耐心，願意一步一步來</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>大模型有更強的能力處理複雜 context 中的依賴關係，不會跳步</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>大模型的 context window 比較大</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>大模型的訓練資料裡有更多訂單編號</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+B。問題不在 context window 大小（C 錯），也不在訓練資料（D
+錯）。小模型無法理解「每一步的輸出是下一步的輸入」這個依賴關係，所以直接平行執行。大模型有更好的指令遵循和推理能力，能處理步驟之間的先後依賴。但大模型也不是不會犯錯（A
+太絕對）。
+</details>
+<hr />
+<p><strong>Q18.</strong> 你的團隊想讓 AI 學會公司資深員工排查問題的
+know-how，讓新人也能有類似的判斷力。最合適的做法是？</p>
+<ul>
+<li><ol type="A">
+<li>用公司資料 fine-tune 一個專屬模型</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>把排查流程和判斷邏輯整理成 context（如 system prompt 或 instruction
+文件），讓 AI 在回答時參考</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>讓新人直接問 ChatGPT</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>錄一段資深員工的教學影片</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+B。這就是 Domain Twin 的概念：透過 context
+傳遞領域知識，而不是修改模型。A（fine-tune）成本高、風險大（可能破壞模型的安全對齊），而且知識更新時要重新訓練。B
+可以隨時更新 context，不用動模型。C 沒有公司 context，D 有用但跟 AI
+無關。
+</details>
+<hr />
+<p><strong>Q19.</strong> 以下哪個情境最能展現 AI「平行化」的價值？</p>
+<ul>
+<li><ol type="A">
+<li>用 AI 寫一封 email，從 10 分鐘縮短到 1 分鐘</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>同時讓三個 AI session 分別處理 code
+review、文件撰寫、測試生成，你在它們之間切換做最終決策</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>讓 AI 自動回覆所有客戶 email</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>用 AI 取代一個初級工程師的工作</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+B。A 是加速（省 9 分鐘），不是平行化。C
+是自動化，但沒有人類參與的平行化。D 是取代，不是協作。B
+是指南強調的模式：你是 scheduler，同時調度多個 AI
+在不同任務上工作，人類負責決策和整合。
+</details>
+<hr />
+<p><strong>Q20.</strong> 回顧整份指南，以下哪個能力最不會因為 AI
+技術更新而過時？</p>
+<ul>
+<li><ol type="A">
+<li>熟練使用某個特定 AI 工具（如 ChatGPT、Copilot）</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>背誦各家模型的參數量和排名</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>理解 LLM 的運作原理和限制，據此判斷什麼時候該用 AI、怎麼用</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>收集最多的 prompt 模板</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+C。A 的工具介面會改變，B 的排名每幾個月就洗牌，D 的模板會過時。但 C
+的核心判斷力（LLM 是 pattern matching、有 hallucination 風險、Agent 用
+tools + memory + loop 補上限制、context
+品質決定輸出品質）是底層邏輯，不會因為換了一個模型就失效。
+</details>
+<hr />
+<p><strong>Q21.</strong> 現有的 LLM
+已經讀過了幾乎整個網路的資料，但新模型還是持續變強。以下哪個不是新模型變強的原因？</p>
+<ul>
+<li><ol type="A">
+<li>推理訓練：讓模型花更多時間「思考」再回答</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>合成資料：用強模型生成高品質訓練資料，補上真實資料不夠的地方</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>找到了更多還沒被爬過的網站</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>架構改進：同樣的資料量，用更好的架構可以學到更多</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+C。網路資料的總量已經接近上限，「找更多資料」不再是主要的進步方向。新模型變強靠的是推理訓練（A）、合成資料（B）、架構改進（D）和更好的訓練方法（如
+RLHF）。進步的方向已經從「量」轉向「質」和「方法」。
+</details>
+<hr />
+<p><strong>Q22.</strong> 你用 Agent + 指令跑了一個 email
+處理流程兩個月，已經很穩定了。但每個月的 API
+費用偏高。下一步怎麼優化？</p>
+<ul>
+<li><ol type="A">
+<li>換一個更便宜的模型</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>把不需要 LLM
+推理的步驟（如寫入資料庫、發通知）抽出來用程式碼跑，只留需要判斷的步驟給
+Agent</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>把整個流程改成 hard-coded workflow，完全不用 LLM</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>減少處理的 email 數量</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+B。流程穩定後，可以把「不需要推理」的步驟抽出來用程式碼或 workflow
+工具跑，省下這些步驟的 token 成本。需要 LLM 判斷的步驟（如分析 email
+內容、決定分類）還是留給 Agent。A 可能犧牲品質，C
+太極端（分析判斷的部分還是需要 LLM），D 沒有解決根本問題。
+</details>
+<hr />
+<p><strong>Q23.</strong> AI coding agent
+寫了一段程式碼，執行後報錯。接著它自己讀了錯誤訊息、修改程式碼、再次執行，這次通過了。這展現了
+Agent 的什麼能力？</p>
+<ul>
+<li><ol type="A">
+<li>Memory：它記得之前的錯誤</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>Tool Use：它能執行程式碼</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>Loop（Plan-Act-Reflect）：執行 → 觀察結果 → 修正 → 再執行</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>B 和 C 都對</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+D。它用了 Tool Use（執行程式碼、讀取錯誤訊息）和 Loop（觀察到失敗 →
+調整策略 → 重試）。A 不太對，因為這是在同一個 context window
+內發生的，不需要跨對話的 memory。這個例子展現了為什麼 Loop + Tools
+可以讓一個會犯錯的 LLM 達到遠超預期的可靠度。
+</details>
+<hr />
+<p><strong>Q24.</strong> 用 Agent 完成一個多步驟任務可能花費
+$0.50-5.00，而單次 LLM 呼叫只要 $0.01-0.10。以下哪個結論最合理？</p>
+<ul>
+<li><ol type="A">
+<li>Agent 太貴了，不應該用</li>
+</ol></li>
+<li><ol start="2" type="A">
+<li>應該把所有任務都用單次 LLM 呼叫解決，省錢</li>
+</ol></li>
+<li><ol start="3" type="A">
+<li>Agent 適合用在高價值、多步驟的任務，簡單任務用單次呼叫就好</li>
+</ol></li>
+<li><ol start="4" type="A">
+<li>跟老闆申請無上限的 API 預算就沒這個問題了</li>
+</ol></li>
+</ul>
+<details>
+<summary>
+答案
+</summary>
+C。成本要跟價值一起看。如果一個 Agent 花 $3 就能自動完成一個原本要人工花
+30 分鐘的多步驟任務，那 $3 很便宜。但如果只是回答一個簡單問題就用
+Agent，那就是浪費。選對的工具做對的事。
+</details>
+<div id="resume-banner" style="display:none">
+  <span id="resume-text"></span>
+  <button id="resume-btn">繼續閱讀</button>
+  <button id="resume-dismiss">✕</button>
+</div>
+<script>
+// Interactive quizzes
+document.addEventListener('DOMContentLoaded', () => {
+  const strongs = document.querySelectorAll('p > strong');
+  const quizzes = [];
+  strongs.forEach(s => {
+    const m = s.textContent.match(/^Q(\d+)\./);
+    if (!m) return;
+    const p = s.parentElement;
+    const ul = p.nextElementSibling;
+    if (!ul || ul.tagName !== 'UL') return;
+    const details = ul.nextElementSibling;
+    if (!details || details.tagName !== 'DETAILS') return;
+    const detailsText = details.textContent.replace('答案', '').trim();
+    const answerMatch = detailsText.match(/^([A-D](?:、[A-D])*)/);
+    const correctLetters = answerMatch ? answerMatch[1].split('、') : [];
+    const explanation = detailsText.replace(/^[A-D](?:、[A-D])*[。．.]?\s*/, '');
+    const isMulti = correctLetters.length > 1;
+    const choices = [];
+    ul.querySelectorAll(':scope > li').forEach(li => choices.push(li.textContent.trim()));
+    const letters = ['A', 'B', 'C', 'D', 'E'];
+    quizzes.push({ num: m[1], questionEl: p, ulEl: ul, detailsEl: details, question: p.innerHTML, choices, correctLetters, explanation, isMulti, letters });
+  });
+  quizzes.forEach(q => {
+    const block = document.createElement('div');
+    block.className = 'quiz-block';
+    block.dataset.answered = 'false';
+    const qDiv = document.createElement('div');
+    qDiv.className = 'quiz-q';
+    qDiv.innerHTML = q.question;
+    block.appendChild(qDiv);
+    if (q.isMulti) {
+      const hint = document.createElement('div');
+      hint.style.cssText = 'font-size:0.82rem;color:var(--muted);margin-bottom:0.6rem;';
+      hint.textContent = '（複選題，選完後按確認）';
+      block.appendChild(hint);
+    }
+    const optList = document.createElement('ul');
+    optList.className = 'quiz-options';
+    q.choices.forEach((c, i) => {
+      const li = document.createElement('li');
+      li.className = 'quiz-opt';
+      li.dataset.letter = q.letters[i];
+      li.textContent = c;
+      if (q.isMulti) {
+        li.addEventListener('click', () => { if (block.dataset.answered === 'true') return; li.classList.toggle('selected'); });
+      } else {
+        li.addEventListener('click', () => { if (block.dataset.answered === 'true') return; submitAnswer(block, q, [q.letters[i]], optList, explDiv); });
+      }
+      optList.appendChild(li);
+    });
+    block.appendChild(optList);
+    if (q.isMulti) {
+      const btn = document.createElement('button');
+      btn.textContent = '確認答案';
+      btn.style.cssText = 'margin-top:0.6rem;padding:0.4rem 1.2rem;background:var(--accent);color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:0.88rem;font-weight:600;';
+      btn.addEventListener('click', () => {
+        if (block.dataset.answered === 'true') return;
+        const selected = [...optList.querySelectorAll('.selected')].map(el => el.dataset.letter);
+        if (selected.length === 0) return;
+        submitAnswer(block, q, selected, optList, explDiv);
+        btn.style.display = 'none';
+      });
+      block.appendChild(btn);
+    }
+    const explDiv = document.createElement('div');
+    explDiv.className = 'quiz-explanation';
+    block.appendChild(explDiv);
+    q.questionEl.parentNode.insertBefore(block, q.questionEl);
+    q.questionEl.remove(); q.ulEl.remove(); q.detailsEl.remove();
+  });
+  function submitAnswer(block, q, selected, optList, explDiv) {
+    block.dataset.answered = 'true';
+    const isCorrect = selected.length === q.correctLetters.length && selected.every(l => q.correctLetters.includes(l));
+    optList.querySelectorAll('.quiz-opt').forEach(opt => {
+      opt.classList.add('locked');
+      if (q.correctLetters.includes(opt.dataset.letter)) opt.classList.add('correct');
+      else if (selected.includes(opt.dataset.letter)) opt.classList.add('wrong');
+    });
+    const result = document.createElement('div');
+    result.className = 'quiz-result ' + (isCorrect ? 'pass' : 'fail');
+    result.textContent = isCorrect ? '✓ 正確' : '✗ 不正確';
+    explDiv.appendChild(result);
+    const expl = document.createElement('div');
+    expl.textContent = q.explanation;
+    explDiv.appendChild(expl);
+    explDiv.classList.add('show');
+    updateScore();
+  }
+  function updateScore() {
+    const scoreEl = document.getElementById('quiz-score-display');
+    if (!scoreEl) return;
+    const allBlocks = document.querySelectorAll('.quiz-block[data-answered="true"]');
+    let correct = 0;
+    allBlocks.forEach(b => { if (b.querySelector('.quiz-result.pass')) correct++; });
+    const total = document.querySelectorAll('.quiz-block').length;
+    scoreEl.querySelector('.score-num').textContent = correct + ' / ' + total;
+  }
+  const lastQuiz = document.querySelectorAll('.quiz-block');
+  if (lastQuiz.length > 0 && !document.getElementById('quiz-score-display')) {
+    const scoreDiv = document.createElement('div');
+    scoreDiv.className = 'quiz-score';
+    scoreDiv.id = 'quiz-score-display';
+    scoreDiv.innerHTML = '<div class="score-num">0 / ' + lastQuiz.length + '</div><div class="score-label">答對題數（含各章節小測驗 + 綜合測驗）</div>';
+    document.body.appendChild(scoreDiv);
+  }
+});
+
+// Progress bar + back-to-top + reading position
+const prog = document.getElementById('progress');
+const totop = document.getElementById('totop');
+const KEY = 'ai-fundamentals-pos';
+function getCurrentSection() {
+  const headers = document.querySelectorAll('h1:not(.title)');
+  let current = null;
+  for (const h of headers) { if (h.getBoundingClientRect().top < 120) current = h; }
+  return current;
+}
+let saveTimer;
+window.addEventListener('scroll', () => {
+  const h = document.documentElement.scrollHeight - window.innerHeight;
+  prog.style.width = (window.scrollY / h * 100) + '%';
+  totop.classList.toggle('show', window.scrollY > 400);
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    const sec = getCurrentSection();
+    if (sec && window.scrollY > 300) {
+      localStorage.setItem(KEY, JSON.stringify({ id: sec.id, title: sec.textContent.trim(), pct: Math.round(window.scrollY / h * 100), ts: Date.now() }));
+    }
+  }, 2000);
+}, { passive: true });
+(function() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(KEY));
+    if (!saved || !saved.id) return;
+    if (Date.now() - saved.ts > 30 * 86400000) return;
+    const target = document.getElementById(saved.id);
+    if (!target) return;
+    const banner = document.getElementById('resume-banner');
+    document.getElementById('resume-text').textContent = '上次讀到 ' + saved.title + '（' + saved.pct + '%）';
+    banner.style.display = 'flex';
+    setTimeout(() => banner.classList.add('show'), 50);
+    document.getElementById('resume-btn').onclick = () => { target.scrollIntoView({ behavior: 'smooth' }); banner.classList.remove('show'); setTimeout(() => banner.style.display = 'none', 400); };
+    document.getElementById('resume-dismiss').onclick = () => { banner.classList.remove('show'); setTimeout(() => banner.style.display = 'none', 400); };
+    setTimeout(() => { if (banner.classList.contains('show')) { banner.classList.remove('show'); setTimeout(() => banner.style.display = 'none', 400); } }, 8000);
+  } catch(e) {}
+})();
+</script>
+</body>
+</html>
