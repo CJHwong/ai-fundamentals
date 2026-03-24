@@ -11,7 +11,7 @@
 - C) AI 比搜尋引擎笨
 - D) 搜尋引擎不會犯錯，AI 會
 
-<details><summary>答案</summary>B。搜尋引擎是「查找」既有的網頁，LLM 是「生成」全新的內容。LLM 根據訓練資料中的統計 pattern 預測下一個 token，產出的是全新的組合。D 不對是因為搜尋引擎也會回傳錯誤或過時的結果。</details>
+<details><summary>答案</summary>B。搜尋引擎是「查找」既有的網頁，LLM 是「生成」全新的內容。LLM 根據訓練資料中的統計 pattern 預測下一個 token，產出的是全新的組合。「搜尋引擎不會犯錯」也不對，搜尋引擎一樣會回傳錯誤或過時的結果。</details>
 
 ---
 
@@ -22,7 +22,7 @@
 - C) LLM 的 context window 不夠
 - D) 你的 prompt 不夠好，應該說「請精確計算」
 
-<details><summary>答案</summary>B。LLM 不會「算」。它看到「128 × 947 =」之後，預測最可能接著出現的數字序列。罕見的數字組合在訓練資料中出現較少，所以容易猜錯。D 沒用，因為問題出在機制層面，不是指令層面。需要精確計算時，應該讓 AI 用 tool（如 code execution）來算。</details>
+<details><summary>答案</summary>B。LLM 不會「算」。它看到「128 × 947 =」之後，預測最可能接著出現的數字序列。罕見的數字組合在訓練資料中出現較少，所以容易猜錯。「請精確計算」也沒用，因為問題出在機制層面，不是指令層面。需要精確計算時，應該讓 AI 用 tool（如 code execution）來算。</details>
 
 ---
 
@@ -44,7 +44,7 @@
 - C) 把多步驟拆成 workflow，每一步等真實結果回來再進行下一步
 - D) 加入 tool use，讓 agent 去系統查而不是用猜的
 
-<details><summary>答案</summary>A、C、D。B 的效果非常有限，因為 hallucination 是 LLM 的機制問題（它在預測最可能的 token），不是態度問題，光用指令管不住。A 有效是因為更大的模型有更好的指令遵循能力，C 用 workflow 固定順序避免跳步，D 用真實資料取代猜測。</details>
+<details><summary>答案</summary>A、C、D。「在 prompt 裡寫請不要編造」效果非常有限，因為 hallucination 是 LLM 的機制問題（它在預測最可能的 token），不是態度問題，光用指令管不住。換更大的模型有效，因為更好的指令遵循能力；把多步驟拆成 workflow 可以固定順序避免跳步；加入 tool use 則用真實資料取代猜測。</details>
 
 ---
 
@@ -55,7 +55,7 @@
 - C) 問題是否夠明確，以及答案需要的關鍵資訊是否真的在這 50 頁裡
 - D) AI 今天狀態不好
 
-<details><summary>答案</summary>C。第一原則是先全部丟進去（已經做了），第二步排查兩件事：你的問題是否有 ambiguity（AI 可能猜錯你要問什麼）？答案需要的關鍵 context 是否真的在裡面（也許少了一份關鍵文件）？B 違反「先全部丟進去」的原則，A 在碰運氣。D 的話... LLM 沒有「狀態」，它每次推理都是獨立的，不存在今天心情好不好的問題。</details>
+<details><summary>答案</summary>C。第一原則是先全部丟進去（已經做了），第二步排查兩件事：你的問題是否有 ambiguity（AI 可能猜錯你要問什麼）？答案需要的關鍵 context 是否真的在裡面（也許少了一份關鍵文件）？「先整理成摘要」違反「先全部丟進去」的原則，「換模型」是在碰運氣。至於「AI 今天狀態不好」... LLM 沒有「狀態」，它每次推理都是獨立的，不存在今天心情好不好的問題。</details>
 
 ---
 
@@ -66,7 +66,7 @@
 - C) 每一步都要人類確認，確保不出錯
 - D) 只有在 AI 出錯的時候才需要人類介入
 
-<details><summary>答案</summary>B。HITL 是刻意的架構設計，不是因為 AI 不行才加的（A 錯）。C 如果每一步都要人確認，那跟不用 AI 沒兩樣。D 的問題是你不知道 AI 什麼時候會出錯，所以要在「關鍵決策點」設審核，而不是等出錯才介入。</details>
+<details><summary>答案</summary>B。HITL 是刻意的架構設計，不是「AI 不夠好的臨時方案」。如果每一步都要人確認，那跟不用 AI 沒兩樣。「只有出錯才介入」的問題是你不知道 AI 什麼時候會出錯，所以要在「關鍵決策點」設審核，而不是等出錯才介入。</details>
 
 ---
 
@@ -88,7 +88,7 @@
 - C) 要盡量減少給 AI 的資訊量，避免混淆
 - D) Context Engineering 是工程師專屬的技能
 
-<details><summary>答案</summary>B。Context Engineering 的核心：你給什麼資訊、怎麼組織，決定了輸出品質。A 錯在 prompt 只是 context 的一部分，不是全部。C 跟指南的「先全部丟進去」原則相反。D 錯在每個角色跟 AI 互動時都在做 Context Engineering。</details>
+<details><summary>答案</summary>B。Context Engineering 的核心：你給什麼資訊、怎麼組織，決定了輸出品質。「完美的 prompt」只是 context 的一部分，不是全部。「盡量減少資訊量」跟指南的「先全部丟進去」原則相反。Context Engineering 也不是工程師專屬的技能，每個角色跟 AI 互動時都在做。</details>
 
 ---
 
@@ -99,7 +99,7 @@
 - C) Ambiguity，你的問題不夠明確
 - D) Context window 不夠大
 
-<details><summary>答案</summary>B。AI 的回答是基於你給的資訊生成的，行銷企劃的內容確實在 context 裡（所以不是 hallucination）。問題是這些無關資訊消耗了 attention 權重，讓 AI 把重點放錯地方。修法：這是少數該先過濾再丟的情況，把不相關的文件移除再問一次。</details>
+<details><summary>答案</summary>B。AI 的回答是基於你給的資訊生成的，行銷企劃的內容確實在 context 裡（所以不是 hallucination）。問題是這些無關資訊消耗了 attention 權重，讓 AI 把重點放錯地方。這也不是 ambiguity（你的問題本身夠明確），也不是 context window 不夠大。修法：這是少數該先過濾再丟的情況，把不相關的文件移除再問一次。</details>
 
 ---
 
@@ -110,7 +110,7 @@
 - C) 請 AI 幫你審查這段 prompt 安不安全
 - D) 只要不是從不明來源下載的就沒問題
 
-<details><summary>答案</summary>B。星星數不代表安全（A 錯），很少人真的讀過 repo 裡的每一行。C 不可靠，因為 AI 本身就可能被 prompt injection 繞過。D 的「明確來源」也不保證安全。唯一可靠的方式是自己讀過、理解、確認沒有隱藏指令（如要求 AI 傳送資料到外部 URL、覆寫安全限制等）。</details>
+<details><summary>答案</summary>B。星星數不代表安全，很少人真的讀過 repo 裡的每一行。讓 AI 幫你審查也不可靠，因為 AI 本身就可能被 prompt injection 繞過。「不是不明來源」也不保證安全。唯一可靠的方式是自己讀過、理解、確認沒有隱藏指令（如要求 AI 傳送資料到外部 URL、覆寫安全限制等）。</details>
 
 ---
 
@@ -121,7 +121,7 @@
 - C) 合約太長，超過 context window
 - D) AI 不擅長處理中文
 
-<details><summary>答案</summary>B。翻譯是 LLM 最強的領域之一（訓練資料中平行語料庫極多）。但「判斷合約有利還是不利」需要理解商業脈絡、法律風險、公司狀況，這些不是 pattern matching 能搞定的。LLM 的能力建立在 pattern 上，pattern 不夠的地方就會出包。</details>
+<details><summary>答案</summary>B。翻譯是 LLM 最強的領域之一（網路上有大量的翻譯對照資料）。但「判斷合約有利還是不利」需要理解商業脈絡、法律風險、公司狀況，這些不是 pattern matching 能搞定的。LLM 的能力建立在 pattern 上，pattern 不夠的地方就會出包。</details>
 
 ---
 
@@ -132,7 +132,7 @@
 - C) 惡意使用者透過 prompt injection 讓 Agent 匯出客戶資料
 - D) Agent 的 API 費用太高
 
-<details><summary>答案</summary>C。當 Agent 有 tool use 權限時，安全風險從「回答錯誤」升級為「做錯事」。Prompt injection 可能讓 Agent 執行非預期的操作（匯出資料、修改記錄等）。A、B、D 是效能和成本問題，C 是安全問題，嚴重程度不在同一個級別。</details>
+<details><summary>答案</summary>C。當 Agent 有 tool use 權限時，安全風險從「回答錯誤」升級為「做錯事」。Prompt injection 可能讓 Agent 執行非預期的操作（匯出資料、修改記錄等）。速度慢、不夠精確、費用高都是效能和成本問題，但資料外洩是安全問題，嚴重程度不在同一個級別。</details>
 
 ---
 
@@ -143,7 +143,7 @@
 - C) 去查原始來源驗證，因為 LLM 無法自我驗證事實
 - D) 問 AI「你確定嗎？」，如果它說確定就可以信
 
-<details><summary>答案</summary>C。LLM 無法驗證自己輸出的事實是否正確（限制 4）。它可能是對的，也可能是 hallucination。D 沒用，因為問它「確不確定」，它只是再做一次 next-token prediction，不是真的去查證。涉及具體數字和事實，一定要查原始來源。</details>
+<details><summary>答案</summary>C。LLM 無法驗證自己輸出的事實是否正確（限制 4）。它可能是對的，也可能是 hallucination。問它「你確定嗎？」也沒用，因為它只是再做一次 next-token prediction，不是真的去查證。涉及具體數字和事實，一定要查原始來源。</details>
 
 ---
 
@@ -154,7 +154,7 @@
 - C) 電腦的 RAM，關機就清空
 - D) 搜尋引擎的快取
 
-<details><summary>答案</summary>B。Agent 的 memory 是外部儲存機制：把重要事情寫下來（存到檔案或資料庫），下次需要時再讀取載入 context。LLM 本身不會記住（像 C 的 RAM），memory 是額外貼上去的「便利貼」。A 錯在人腦記憶是原生能力，LLM 的 memory 不是。</details>
+<details><summary>答案</summary>B。Agent 的 memory 是外部儲存機制：把重要事情寫下來（存到檔案或資料庫），下次需要時再讀取載入 context。LLM 本身不會記住（像 RAM 一樣關機就清空），memory 是額外貼上去的「便利貼」。人腦記憶是原生能力，但 LLM 的 memory 不是。</details>
 
 ---
 
@@ -187,7 +187,7 @@
 - C) 大模型的 context window 比較大
 - D) 大模型的訓練資料裡有更多訂單編號
 
-<details><summary>答案</summary>B。問題不在 context window 大小（C 錯），也不在訓練資料（D 錯）。小模型無法理解「每一步的輸出是下一步的輸入」這個依賴關係，所以直接平行執行。大模型有更好的指令遵循和推理能力，能處理步驟之間的先後依賴。但大模型也不是不會犯錯（A 太絕對）。</details>
+<details><summary>答案</summary>B。問題不在 context window 大小，也不在訓練資料裡有沒有訂單編號。小模型無法理解「每一步的輸出是下一步的輸入」這個依賴關係，所以直接平行執行。大模型有更好的指令遵循和推理能力，能處理步驟之間的先後依賴。但說大模型「比較有耐心」太擬人化了，它只是推理能力更強。</details>
 
 ---
 
@@ -198,7 +198,7 @@
 - C) 讓新人直接問 ChatGPT
 - D) 錄一段資深員工的教學影片
 
-<details><summary>答案</summary>B。這就是 Domain Twin 的概念：透過 context 傳遞領域知識，而不是修改模型。A（fine-tune）成本高、風險大（可能破壞模型的安全對齊），而且知識更新時要重新訓練。B 可以隨時更新 context，不用動模型。C 沒有公司 context，D 有用但跟 AI 無關。</details>
+<details><summary>答案</summary>B。這就是 Domain Twin 的概念：透過 context 傳遞領域知識，而不是修改模型。Fine-tune 成本高、風險大（可能破壞模型的安全對齊），而且知識更新時要重新訓練。把 know-how 整理成 context 則可以隨時更新，不用動模型。直接問 ChatGPT 沒有公司 context，錄教學影片有用但跟 AI 無關。</details>
 
 ---
 
@@ -209,7 +209,7 @@
 - C) 讓 AI 自動回覆所有客戶 email
 - D) 用 AI 取代一個初級工程師的工作
 
-<details><summary>答案</summary>B。A 是加速（省 9 分鐘），不是平行化。C 是自動化，但沒有人類參與的平行化。D 是取代，不是協作。B 是指南強調的模式：你是 scheduler，同時調度多個 AI 在不同任務上工作，人類負責決策和整合。</details>
+<details><summary>答案</summary>B。寫一封 email 快 9 分鐘是加速，不是平行化。自動回覆所有 email 是自動化，但沒有人類參與的平行化。取代工程師是取代，不是協作。同時讓三個 AI session 處理不同任務、你在中間切換做決策，才是指南強調的模式：你是 scheduler，同時調度多個 AI 在不同任務上工作。</details>
 
 ---
 
@@ -220,7 +220,7 @@
 - C) 理解 LLM 的運作原理和限制，據此判斷什麼時候該用 AI、怎麼用
 - D) 收集最多的 prompt 模板
 
-<details><summary>答案</summary>C。A 的工具介面會改變，B 的排名每幾個月就洗牌，D 的模板會過時。但 C 的核心判斷力（LLM 是 pattern matching、有 hallucination 風險、Agent 用 tools + memory + loop 補上限制、context 品質決定輸出品質）是底層邏輯，不會因為換了一個模型就失效。</details>
+<details><summary>答案</summary>C。特定工具的介面會改變，模型的排名每幾個月就洗牌，prompt 模板會過時。但核心判斷力（LLM 是 pattern matching、有 hallucination 風險、Agent 用 tools + memory + loop 補上限制、context 品質決定輸出品質）是底層邏輯，不會因為換了一個模型就失效。</details>
 
 ---
 
@@ -242,7 +242,7 @@
 - C) 把整個流程改成 hard-coded workflow，完全不用 LLM
 - D) 減少處理的 email 數量
 
-<details><summary>答案</summary>B。流程穩定後，可以把「不需要推理」的步驟抽出來用程式碼或 workflow 工具跑，省下這些步驟的 token 成本。需要 LLM 判斷的步驟（如分析 email 內容、決定分類）還是留給 Agent。A 可能犧牲品質，C 太極端（分析判斷的部分還是需要 LLM），D 沒有解決根本問題。</details>
+<details><summary>答案</summary>B。流程穩定後，可以把「不需要推理」的步驟抽出來用程式碼或 workflow 工具跑，省下這些步驟的 token 成本。需要 LLM 判斷的步驟（如分析 email 內容、決定分類）還是留給 Agent。直接換便宜模型可能犧牲品質，完全不用 LLM 太極端（分析判斷的部分還是需要 LLM），減少處理量沒有解決根本問題。</details>
 
 ---
 
@@ -253,7 +253,7 @@
 - C) Loop（Plan-Act-Reflect）：執行 → 觀察結果 → 修正 → 再執行
 - D) B 和 C 都對
 
-<details><summary>答案</summary>D。它用了 Tool Use（執行程式碼、讀取錯誤訊息）和 Loop（觀察到失敗 → 調整策略 → 重試）。A 不太對，因為這是在同一個 context window 內發生的，不需要跨對話的 memory。這個例子展現了為什麼 Loop + Tools 可以讓一個會犯錯的 LLM 達到遠超預期的可靠度。</details>
+<details><summary>答案</summary>D。它同時用了 Tool Use（執行程式碼、讀取錯誤訊息）和 Loop（觀察到失敗 → 調整策略 → 重試）。Memory 不太對，因為這是在同一個 context window 內發生的，不需要跨對話的記憶。這個例子展現了為什麼 Loop + Tools 可以讓一個會犯錯的 LLM 達到遠超預期的可靠度。</details>
 
 ---
 

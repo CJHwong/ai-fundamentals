@@ -333,7 +333,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const li = document.createElement('li');
       li.className = 'quiz-opt';
       li.dataset.letter = q.letters[i];
-      li.textContent = c;
+      li.textContent = q.letters[i] + '. ' + c.replace(/^[A-D]\)\s*/, '');
       if (q.isMulti) {
         li.addEventListener('click', () => { if (block.dataset.answered === 'true') return; li.classList.toggle('selected'); });
       } else {
