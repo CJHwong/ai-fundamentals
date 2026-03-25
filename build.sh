@@ -41,3 +41,11 @@ pandoc "$combined" \
   -o "$output"
 
 echo "done: $(wc -l < "$output" | tr -d ' ') lines -> $output"
+
+# 3. Generate OG preview image (requires node + playwright-core)
+if command -v node &> /dev/null && [ -d node_modules/playwright-core ]; then
+  echo "generating preview image..."
+  node generate-preview.mjs
+else
+  echo "skip preview image (node or playwright-core not found)"
+fi
