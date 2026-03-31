@@ -4,6 +4,19 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>從零開始認識 AI - LLM、Agent、以及怎麼跟它們合作</title>
+  <meta name="description" content="從零開始認識 AI：LLM 如何運作、Agent 架構、以及怎麼跟它們合作的實用指南。" />
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="從零開始認識 AI" />
+  <meta property="og:description" content="LLM 如何運作、Agent 架構、以及怎麼跟它們合作的實用指南。" />
+  <meta property="og:image" content="https://cjhwong.github.io/ai-fundamentals/preview.png" />
+  <meta property="og:url" content="https://cjhwong.github.io/ai-fundamentals/" />
+  <meta property="og:locale" content="zh_TW" />
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="從零開始認識 AI" />
+  <meta name="twitter:description" content="LLM 如何運作、Agent 架構、以及怎麼跟它們合作的實用指南。" />
+  <meta name="twitter:image" content="https://cjhwong.github.io/ai-fundamentals/preview.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&family=DM+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
@@ -808,8 +821,12 @@ Persistent Memory)</h3>
 都是從零開始。它不記得昨天跟你聊了什麼、上週做了什麼決定、你的偏好是什麼。</p>
 <p>它唯一的「記憶」就是當前 context window
 裡的內容。對話結束，一切歸零。</p>
-<p>這代表： - 它無法從過去的錯誤中學習 - 它無法追蹤長期的專案進度 -
-每次互動都要重新提供背景資訊</p>
+<p>這代表：</p>
+<ul>
+<li>它無法從過去的錯誤中學習</li>
+<li>它無法追蹤長期的專案進度</li>
+<li>每次互動都要重新提供背景資訊</li>
+</ul>
 <p><strong>有解嗎？</strong> 各家都在做 memory 功能（ChatGPT 的
 memory、Claude 的 project
 knowledge），但目前都是外掛的，模型本身還是不會記。</p>
@@ -1074,12 +1091,14 @@ B。這個場景中，LLM 只負責分類，後續流程是固定的 if-else
 每次推理都是獨立的，對話結束就忘記一切。就像一個每天早上醒來就失憶的人，不管昨天跟你聊了什麼、做了什麼決定，今天都要重新來過。</p>
 <p>Agent 透過外部的 memory 系統解決這個問題。概念很簡單：既然 LLM
 自己記不住，就把重要的事情寫在「筆記本」上，下次需要的時候再翻開來看。</p>
-<p>具體來說： -
-<strong>對話結束前，把重要結論寫下來</strong>（存到檔案或資料庫） -
-<strong>下次對話開始時，先把筆記載入 context</strong>（讓 LLM
-看到之前的紀錄） -
-<strong>隨著互動越來越多，筆記越來越豐富</strong>（Agent
-對你、對任務的「理解」持續累積）</p>
+<p>具體來說：</p>
+<ul>
+<li><strong>對話結束前，把重要結論寫下來</strong>（存到檔案或資料庫）</li>
+<li><strong>下次對話開始時，先把筆記載入 context</strong>（讓 LLM
+看到之前的紀錄）</li>
+<li><strong>隨著互動越來越多，筆記越來越豐富</strong>（Agent
+對你、對任務的「理解」持續累積）</li>
+</ul>
 <p>這跟你用便利貼提醒自己明天要做的事是一樣的道理。LLM
 的「大腦」不會記住，但它的「筆記本」會。</p>
 <blockquote>
@@ -1094,10 +1113,13 @@ memory 後就知道不需要問溝通偏好，直接用 email
 <p>Tool Use 的核心其實很簡單：LLM 被訓練成能穩定輸出結構化的格式（通常是
 JSON），這個 JSON 就是呼叫外部 API 的參數。LLM
 不是真的在「操作」系統，它是在「描述」要做什麼操作，然後由程式去執行。</p>
-<p>這解決了兩個限制： -
-<strong>Hallucination</strong>：不再靠猜，而是透過 API
-查詢真實資料（這就是 RAG 的概念） - <strong>無法驗證</strong>：Agent
-可以呼叫工具去檢查自己的輸出是否正確（例如執行程式碼看是否會報錯）</p>
+<p>這解決了兩個限制：</p>
+<ul>
+<li><strong>Hallucination</strong>：不再靠猜，而是透過 API
+查詢真實資料（這就是 RAG 的概念）</li>
+<li><strong>無法驗證</strong>：Agent
+可以呼叫工具去檢查自己的輸出是否正確（例如執行程式碼看是否會報錯）</li>
+</ul>
 <blockquote>
 <p>舉例：當 Agent 需要知道一筆訂單的狀態，它不是憑訓練資料去猜，而是呼叫
 API 去查。拿到真實資料後再做判斷。Ground truth
@@ -1108,19 +1130,27 @@ API 去查。拿到真實資料後再做判斷。Ground truth
 <strong>fine-tuning</strong>：拿你自己的資料對模型做進一步訓練，直接改變模型內部的參數。</p>
 <p>跟 RAG 的差別：RAG 是在 context 裡塞資料讓模型「看到」，fine-tuning
 是把知識「烙進」模型裡。</p>
-<p>聽起來很強，但代價不小： -
-<strong>成本高</strong>：需要準備大量高品質的訓練資料，訓練過程也燒錢 -
-<strong>風險大</strong>：研究顯示 fine-tuning
+<p>聽起來很強，但代價不小：</p>
+<ul>
+<li><strong>成本高</strong>：需要準備大量高品質的訓練資料，訓練過程也燒錢</li>
+<li><strong>風險大</strong>：研究顯示 fine-tuning
 可能破壞模型原本的安全對齊（safety alignment
-collapse），即使訓練資料本身沒問題 -
-<strong>不好更新</strong>：知識變了就要重新訓練，不像 RAG 改資料就好</p>
+collapse），即使訓練資料本身沒問題</li>
+<li><strong>不好更新</strong>：知識變了就要重新訓練，不像 RAG
+改資料就好</li>
+</ul>
 <p>所以除非你有很明確的「行為改變」需求（例如讓模型用特定格式輸出、學會一種特殊語氣），通常先用
 RAG + Context Engineering 就夠了。這也是這份指南一直在強調的方向：先用
 context 解決問題，能不動模型就不動。</p>
 <h2 id="loop-透過驗證自我修正">Loop → 透過驗證自我修正</h2>
 <p>One-shot 的 LLM 呼叫，錯了就是錯了，沒有第二次機會。</p>
-<p>Agent 的 Plan-Act-Reflect 循環讓它可以： 1. 執行一個動作 2. 觀察結果
-3. 判斷是否符合預期 4. 如果不對，調整策略再試</p>
+<p>Agent 的 Plan-Act-Reflect 循環讓它可以：</p>
+<ol type="1">
+<li>執行一個動作</li>
+<li>觀察結果</li>
+<li>判斷是否符合預期</li>
+<li>如果不對，調整策略再試</li>
+</ol>
 <p>這等於給了 LLM
 一個它原本不具備的能力：<strong>自我修正</strong>。</p>
 <p>靠的是架構，不是更聰明的模型。一個 80% 準確率的
@@ -1272,9 +1302,12 @@ Complexity)</h3>
 <p>舉例：有個 Agent 負責處理
 email，要依序跑四個步驟，每一步的輸出是下一步的輸入。但較小的模型直接跳過等待，同時呼叫四個工具，編造了不存在的參數。</p>
 </blockquote>
-<p>這不完全是模型的問題，也是架構的問題。你可以透過： - 更好的 prompt
-設計來約束執行順序 - 把複雜任務拆成多個小 agent 協作 - 用 workflow
-固定關鍵路徑，只在需要判斷的地方讓 agent 介入</p>
+<p>這不完全是模型的問題，也是架構的問題。你可以透過：</p>
+<ul>
+<li>更好的 prompt 設計來約束執行順序</li>
+<li>把複雜任務拆成多個小 agent 協作</li>
+<li>用 workflow 固定關鍵路徑，只在需要判斷的地方讓 agent 介入</li>
+</ul>
 <p>另一個容易踩的坑：<strong>給 Agent 太多工具反而會讓它變笨。</strong>
 每個工具定義都會佔 context 空間，工具太多會稀釋 attention，讓 Agent
 在不該用某個工具的時候去用它。挑選 Agent 需要的工具時，少即是多。</p>
@@ -1539,10 +1572,13 @@ vs. 明確指令</h3>
 <h3 id="定期清理-context">定期清理 Context</h3>
 <p>長對話的 context
 會越來越髒：錯誤的嘗試、過時的討論、被否決的方案，全部留在裡面。</p>
-<p>兩個做法： 1. <strong>總結後開新對話</strong>：請 AI
-把目前的結論壓縮成一段摘要，複製到新的聊天視窗繼續 2.
-<strong>編輯而不是重新生成</strong>：讓 AI
-在一個固定的文件上修改，而不是每次都全部重寫</p>
+<p>兩個做法：</p>
+<ol type="1">
+<li><strong>總結後開新對話</strong>：請 AI
+把目前的結論壓縮成一段摘要，複製到新的聊天視窗繼續</li>
+<li><strong>編輯而不是重新生成</strong>：讓 AI
+在一個固定的文件上修改，而不是每次都全部重寫</li>
+</ol>
 <h2 id="context-engineering-不只是-prompt-engineering">Context
 Engineering 不只是 Prompt Engineering</h2>
 <p>Prompt Engineering 是 Context Engineering 的一個子集。Context
@@ -1578,9 +1614,12 @@ plugin，都要先讀過一遍，確認你理解它在做什麼。</strong>
 幫不了你建立直覺</h3>
 <p>Prompt engineering 的價值不在於背誦模板，在於你自己摸索出「怎麼跟 AI
 溝通最有效」的直覺。</p>
-<p>這個直覺只能從實作中累積： - 你丟了什麼 context，AI 給了什麼結果 -
-你換了一種問法，結果變好還是變差 - 你加了什麼限制條件，AI
-的行為怎麼改變</p>
+<p>這個直覺只能從實作中累積：</p>
+<ul>
+<li>你丟了什麼 context，AI 給了什麼結果</li>
+<li>你換了一種問法，結果變好還是變差</li>
+<li>你加了什麼限制條件，AI 的行為怎麼改變</li>
+</ul>
 <p>複製別人的 prompt
 跳過了這個過程。短期省時間，長期你永遠不知道為什麼某個 prompt
 有效、另一個沒效。</p>
@@ -1740,8 +1779,12 @@ B、C、D、E。你不是一個做事比較快的人，你是同時有好幾個�
 <h2 id="你的大腦是單核心-cpu">你的大腦是單核心 CPU</h2>
 <p>人的大腦擅長深度思考，但一次只能專注一件事。你可以把它想成一顆很強但只有單核心的
 CPU。</p>
-<p>每次切換任務（context switch），你需要： - 把當前的思緒存起來 -
-載入新任務的背景 - 重新進入狀態</p>
+<p>每次切換任務（context switch），你需要：</p>
+<ul>
+<li>把當前的思緒存起來</li>
+<li>載入新任務的背景</li>
+<li>重新進入狀態</li>
+</ul>
 <p>這個切換成本很高。UC Irvine 的研究者 Gloria Mark
 的研究指出，被打斷後平均需要超過 20 分鐘才能恢復原本的專注度。(<a
 href="https://ics.uci.edu/~gmark/chi08-mark.pdf">Gloria Mark, “The Cost
@@ -1763,13 +1806,21 @@ AI，例如「分析這份文件的現況」</li>
 在背景完成了大量工作，這個成本變得值得。</p>
 <h2 id="實際場景">實際場景</h2>
 <h3 id="工程師的一個早上">工程師的一個早上</h3>
-<p>傳統方式（循序）： 1. 寫 Feature X 的設計文件 → 2 小時 2. 做 Code
-Review → 1 小時 3. 回 Slack 訊息 → 30 分鐘</p>
-<p>平行方式： 1. 指派 AI 撰寫 Feature X 設計文件的初稿（AI 跑 3-10
-分鐘） 2. AI 跑的期間，開始 Code Review。請另一個 AI 先做初步
-review，總結修改內容和需要關注的地方 3. Code Review 等 AI 回來的空檔，請
-AI 整理 Slack thread 的進度和建議回覆方向 4. AI
-的設計文件初稿回來了，檢查、調整、定稿</p>
+<p>傳統方式（循序）：</p>
+<ol type="1">
+<li>寫 Feature X 的設計文件 → 2 小時</li>
+<li>做 Code Review → 1 小時</li>
+<li>回 Slack 訊息 → 30 分鐘</li>
+</ol>
+<p>平行方式：</p>
+<ol type="1">
+<li>指派 AI 撰寫 Feature X 設計文件的初稿（AI 跑 3-10 分鐘）</li>
+<li>AI 跑的期間，開始 Code Review。請另一個 AI 先做初步
+review，總結修改內容和需要關注的地方</li>
+<li>Code Review 等 AI 回來的空檔，請 AI 整理 Slack thread
+的進度和建議回覆方向</li>
+<li>AI 的設計文件初稿回來了，檢查、調整、定稿</li>
+</ol>
 <p>一樣三件事，但你的等待時間大幅減少。你變成在多個 AI agent
 之間切換的調度者（scheduler）。</p>
 <h3 id="pm-的一個下午">PM 的一個下午</h3>
@@ -2019,9 +2070,13 @@ Agent
 知道該用什麼層次的語言）和<strong>你要什麼形式的解釋</strong>（步驟、業務規則、實際例子）。</p>
 <p>範例 prompt：</p>
 <blockquote>
-<p>我沒有技術背景。請用一般人聽得懂的語言，解釋這段程式碼： -
-它在做什麼？使用者會看到什麼？ - 資料怎麼流動的？（用步驟說明） -
-有什麼業務規則？（用「如果…那麼…」說明） - 給我一個實際例子</p>
+<p>我沒有技術背景。請用一般人聽得懂的語言，解釋這段程式碼：</p>
+<ul>
+<li>它在做什麼？使用者會看到什麼？</li>
+<li>資料怎麼流動的？（用步驟說明）</li>
+<li>有什麼業務規則？（用「如果…那麼…」說明）</li>
+<li>給我一個實際例子</li>
+</ul>
 <p>不要提到變數名稱或語法。</p>
 <p>程式碼：（貼上程式碼）</p>
 <p>我想知道的是：（你的具體問題，例如「這段跟退款流程有什麼關係？」）</p>
@@ -2029,9 +2084,12 @@ Agent
 <p>這個 prompt 有效是因為：它告訴 AI
 你的程度（不用省略基礎說明），限定了輸出格式（步驟、業務規則、例子），還排除了你不需要的東西（變數名、語法）。你可以根據自己的需求調整。</p>
 <h3 id="對齊-spec">對齊 Spec</h3>
-<p>把跟 AI 的對話當成跟工程師對焦之前的演練： - 貼上需求描述，請 AI
-覆述它的理解，看是否跟你想的一致 - 請 AI 列出可能的 edge cases 或遺漏 -
-把 AI 的分析帶到跟工程師的會議中，省去從頭解釋的時間</p>
+<p>把跟 AI 的對話當成跟工程師對焦之前的演練：</p>
+<ul>
+<li>貼上需求描述，請 AI 覆述它的理解，看是否跟你想的一致</li>
+<li>請 AI 列出可能的 edge cases 或遺漏</li>
+<li>把 AI 的分析帶到跟工程師的會議中，省去從頭解釋的時間</li>
+</ul>
 <hr />
 <h2 id="給所有人">給所有人</h2>
 <p>AI 最容易上手的日常應用有一個共通
