@@ -16,7 +16,7 @@ Agent 的 Plan-Act-Reflect 循環中，每一步都可能需要呼叫一次 LLM�
 | Agent 完成一個多步驟任務 | $0.50-5.00 |
 | 企業級 Agent 對話 | $2.00+ |
 
-這代表你不能把 Agent 用在所有事情上。它適合高價值、多步驟的任務，不適合用來回答一個簡單問題。
+這代表你不能把 Agent 用在所有事情上。Agent 適合高價值、多步驟的任務，不適合用來回答一個簡單問題。
 
 **趨勢：** 推理成本正在快速下降。同一個時期，不同模型的推理速度差異可以超過 10 倍（例如 o3-pro 約 23 tokens/s，而 Gemini 2.5 Flash 可達數百 tokens/s）。更小但更聰明的模型（如各家的 mini/flash 系列）讓日常任務的成本大幅降低，只在真正需要深度推理時才動用昂貴的大模型。
 
@@ -32,7 +32,7 @@ Agent 的 Plan-Act-Reflect 循環中，每一步都可能需要呼叫一次 LLM�
 - 把複雜任務拆成多個小 agent 協作
 - 用 workflow 固定關鍵路徑，只在需要判斷的地方讓 agent 介入
 
-另一個容易踩的坑：**給 Agent 太多工具反而會讓它變笨。** 每個工具定義都會佔 context 空間，工具太多會稀釋 attention，讓 Agent 在不該用某個工具的時候去用它。挑選 Agent 需要的工具時，少即是多。
+另一個容易踩的坑：**給 Agent 太多工具反而會讓 Agent 變笨。** 每個工具定義都會佔 context 空間，工具太多會稀釋 attention，讓 Agent 在不該用某個工具的時候去用。挑選 Agent 需要的工具時，少即是多。
 
 但即使做了這些，長鏈任務的可靠性仍然是 agent 最大的挑戰。
 
@@ -40,14 +40,14 @@ Agent 的 Plan-Act-Reflect 循環中，每一步都可能需要呼叫一次 LLM�
 
 ### 3. 安全性 (Safety)
 
-Agent 能操作外部系統，這代表它的錯誤不只是「回答錯誤」，而是「做錯事」。
+Agent 能操作外部系統，這代表 Agent 的錯誤不只是「回答錯誤」，而是「做錯事」。
 
 LLM 亂講頂多給你一個錯誤的答案。但 Agent 亂來的話，可能寄出不該寄的 email、刪掉不該刪的資料、或對外部系統做出無法挽回的操作。
 
 單靠 prompt 無法防範所有惡意攻擊（Prompt Injection、Jailbreak）。實務上的做法：
 
 1. **Guardrails**：在 input 進入主 Agent 前，先用一個小模型過濾惡意意圖
-2. **限制影響範圍 (Blast Radius)**：不要給 Agent 超出必要的權限。絕對不要讓 Agent 直接寄 email，而是讓它產生草稿，由人類確認後才送出
+2. **限制影響範圍 (Blast Radius)**：不要給 Agent 超出必要的權限。絕對不要讓 Agent 直接寄 email，而是讓 Agent 產生草稿，由人類確認後才送出
 3. **Human-in-the-Loop (HITL)**：在關鍵決策點設計人類審核機制
 
 > [研究指出](https://blogs.cisco.com/ai/open-model-vulnerability-analysis)，針對主流模型的多輪 jailbreak 攻擊成功率可達 90% 以上。資安的原則是：有 1% 被攻破的風險就算不及格。

@@ -6,24 +6,24 @@
 
 Linus Torvalds 在[一場訪談](https://www.youtube.com/watch?v=OvuEYtkOH88&t=1230s)中說過：「We don't write machine code anymore. We don't even write Assembler. And now we're moving on from C to Rust. So I don't see this as something as revolutionary as all the news talk is every day about AI.」
 
-AI 寫程式是程式語言抽象化的自然延伸。重點不是 AI 能不能寫 code，而是你怎麼跟它協作。
+AI 寫程式是程式語言抽象化的自然延伸。重點不是 AI 能不能寫 code，而是你怎麼跟 AI 協作。
 
 **四個原則：**
 
 1. **以終為始**：動手前，你要清楚最終程式碼應該做什麼。AI 是執行者，你是設計者
-2. **Plan 然後 Act**：讓 AI 先規劃、你確認方向，再讓它執行。不要直接讓它開始寫
+2. **Plan 然後 Act**：讓 AI 先規劃、你確認方向，再讓 AI 執行。不要直接讓他開始寫
 3. **Review test cases，不是 review 每一行 code**：AI 生成的實作細節可以依賴自動化測試驗證。你的精力放在測試案例的完整性和正確性。（[研究顯示](https://metr.org/notes/2026-03-10-many-swe-bench-passing-prs-would-not-be-merged-into-main/)，AI agent 通過測試的 PR 有大約一半不會被 repo maintainer 接受合併，測試通過不等於 code 沒問題）
-4. **平行工作**：同時開多個 AI session 處理不同任務（feature 開發、code review、文件更新），你在它們之間切換做最終決策
+4. **平行工作**：同時開多個 AI session 處理不同任務（feature 開發、code review、文件更新），你在這些 session 之間切換做最終決策
 
 **注意事項：**
 
 - AI 跑的時候不要乾等，去做下一件事
 - 不要在 AI 正在編輯的檔案上同時修改
-- AI 產出有遺漏的話，回到對話框告訴它漏了什麼，不要自己改
+- AI 產出有遺漏的話，回到對話框告訴 AI 漏了什麼，不要自己改
 
 ### 工具與預算
 
-- **選模型**：吃到飽方案（如 Claude Max）直接用最強的（Opus 4.6），它通常能用更少的來回完成任務。按用量計費的話，日常用便宜的（GPT-5.4、Gemini 3.1 Flash），複雜推理才用貴的（GPT-5.4-Pro、Gemini 3.1 Pro）
+- **選模型**：吃到飽方案（如 Claude Max）直接用最強的（Opus 4.6），強模型通常能用更少的來回完成任務。按用量計費的話，日常用便宜的（GPT-5.4、Gemini 3.1 Flash），複雜推理才用貴的（GPT-5.4-Pro、Gemini 3.1 Pro）
 - **動手試**：免費資源很多（Ollama Cloud、GitHub Models、各家免費額度）。就算想花錢，OpenAI 平台加值 $10 美金就能跑很多任務，比你預期的多。不要等人幫你準備好，自己動手
 - **養成直覺**：一次簡單問答大約花多少 token、一個多步驟 Agent 任務大約花多少。有這個感覺之後，你才知道什麼時候該用大模型、什麼時候小的就夠
 
@@ -41,7 +41,7 @@ AI 寫程式是程式語言抽象化的自然延伸。重點不是 AI 能不能�
 
 > 我沒有技術背景。請用一般人聽得懂的語言，解釋這段程式碼：
 >
-> - 它在做什麼？使用者會看到什麼？
+> - 這段程式碼在做什麼？使用者會看到什麼？
 > - 資料怎麼流動的？（用步驟說明）
 > - 有什麼業務規則？（用「如果...那麼...」說明）
 > - 給我一個實際例子
@@ -52,13 +52,13 @@ AI 寫程式是程式語言抽象化的自然延伸。重點不是 AI 能不能�
 > 
 > 我想知道的是：（你的具體問題，例如「這段跟退款流程有什麼關係？」）
 
-這個 prompt 有效是因為：它告訴 AI 你的程度（不用省略基礎說明），限定了輸出格式（步驟、業務規則、例子），還排除了你不需要的東西（變數名、語法）。你可以根據自己的需求調整。
+這個 prompt 有效是因為：你告訴了 AI 你的程度（不用省略基礎說明），限定了輸出格式（步驟、業務規則、例子），還排除了你不需要的東西（變數名、語法）。你可以根據自己的需求調整。
 
 ### 對齊 Spec
 
 把跟 AI 的對話當成跟工程師對焦之前的演練：
 
-- 貼上需求描述，請 AI 覆述它的理解，看是否跟你想的一致
+- 貼上需求描述，請 AI 覆述他的理解，看是否跟你想的一致
 - 請 AI 列出可能的 edge cases 或遺漏
 - 把 AI 的分析帶到跟工程師的會議中，省去從頭解釋的時間
 
